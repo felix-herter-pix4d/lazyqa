@@ -44,12 +44,12 @@ class QAProject():
               +-...
     """
     @classmethod
-    def _get_image_path(cls, project_root):
+    def _get_image_path(cls, project_root: Path):
         """Return path to subfolder of the project that should contain the images."""
         return project_root / 'Images'
 
     @classmethod
-    def check(cls, path):
+    def check(cls, path: Path):
         """Check that the requirements of a QAProject are met."""
         if not path.is_dir():
             logging.debug(f"Not a project '{path}': not a folder.")
@@ -67,13 +67,13 @@ class QAProject():
         
         return True
 
-    def __new__(cls, path):
+    def __new__(cls, path: Path):
         """Ensure that the requirements of a QAProject are met before creating an instance."""
         if not cls.check(path):
             raise ValueError(f"Could not create {cls} from '{path}': requirements not met.")
         return super().__new__(cls)
 
-    def __init__(self, path):
+    def __init__(self, path: Path):
         logging.info(f"Created QAProject:{path=}")
         self.path = path
 
