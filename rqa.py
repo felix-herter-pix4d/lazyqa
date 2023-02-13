@@ -44,6 +44,10 @@ class QAProject():
     @classmethod
     def check(cls, path):
         """Check that the requirements of a QAProject are met."""
+        if not path.is_dir():
+            logging.debug(f"Not a project '{path}': not a folder.")
+            return False
+
         images_path = cls._get_image_path(path)
 
         if not images_path.exists() or not images_path.is_dir():
@@ -82,10 +86,5 @@ if __name__ == "__main__":
         parser.print_help()
         
     arguments = parser.parse_args()
-    data_root = Path(arguments.qa_data)
-    data_projects = (path for path in data_root.iterdir() if path.is_dir())
-
-
-    for project in data_projects:
-        if QAProject.check(project):
-            QAProject(project)
+    qa_projects_root = Path(arguments.qa_data)
+    qa_projects = (QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path))
