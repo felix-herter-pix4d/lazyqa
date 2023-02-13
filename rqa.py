@@ -77,6 +77,14 @@ class QAProject():
         logging.info(f"Created QAProject:{path=}")
         self.path = path
 
+def check_binary(binary: Path):
+    """Sanity checks on the binary."""
+    if not os.access(binary, os.X_OK):
+        raise ValueError(f"'{binary}' is not executable")
+
+    #TODO: compare touch time.
+
+    return True
 
         
 if __name__ == "__main__":
@@ -102,7 +110,7 @@ if __name__ == "__main__":
     qa_projects = (QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path))
     
     binary = Path(arguments.binary)
-    # TODO: sanity checks for binary
+    check_binary(binary)
     
     stream = os.popen(f"git -C {binary.parent} rev-parse HEAD")
     output = stream.read()
