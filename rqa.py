@@ -1,8 +1,15 @@
 #/bin/python3
 
+# Script to rapidly assess the effect that a code change has to a wide variety
+# of test cases (QA datasets).
+#
+# It enables to compare the *new* results produced by the app with a
+# *reference* output (usually produced the current state of the app).
+#
 # Notes: The terms QA datasets and QA projects are used interchangeably and
-# refer, depending on the context, to the set of images that belong to one project or
-# the folder containing all information for the project, including the images).
+# refer, depending on the context, to the set of images that belong to one
+# project or the folder containing all information for the project, including
+# the images).
 
 import sys
 import os
