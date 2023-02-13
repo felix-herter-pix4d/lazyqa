@@ -85,13 +85,25 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "qa_data",
+        "projects",
          help = "path to the QA data projects"
+    )
+
+    parser.add_argument(
+        "binary",
+         help = "path to the binary under investigation"
     )
 
     if len(sys.argv) < 2:
         parser.print_help()
         
     arguments = parser.parse_args()
-    qa_projects_root = Path(arguments.qa_data)
+    qa_projects_root = Path(arguments.projects)
     qa_projects = (QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path))
+    
+    binary = Path(arguments.binary)
+    # TODO: sanity checks for binary
+    
+    stream = os.popen(f"git -C {binary.parent} rev-parse HEAD")
+    output = stream.read()
+    print("the output is: \n", output)
