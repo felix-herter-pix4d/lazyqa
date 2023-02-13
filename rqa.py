@@ -36,23 +36,31 @@ class QAProject():
               |
               +-...
     """
-    def __init__(self, path):
-        logging.debug(f"QAProject:{path=}")
-        self.path = path
-        self._check()
-
-    def _check(self):
-        images_path = self.path / 'Images'
+    @classmethod
+    def check(cls, path):
+        """Check that the requirements of a QAProject are met."""
+        images_path = path / 'Images'
 
         if not images_path.exists() or not images_path.is_dir():
-            logging.debug(f"{self.path} not a valid project folder, missing images folder {images_path.name} ") # TODO: use __str__ instead of self.path
+            logging.debug(f"Not a project '{path}': missing folder '{images_path.name}'.")
             return False
                 
         if not _contains_tiffs(images_path):
-            logging.debug(f"{images_path} does not contain tiff-files.")
+            logging.debug(f"Not a project '{images_path}': no images found.")
             return False
         
         return True
+
+    def __new__(cls, path):
+        """Ensure that the requirements of a QAProject are met before creating an instance."""
+        if not cls.check(path):
+            raise ValueError(f"Could not create {cls} from '{path}': requirements not met.")
+        return super().__new__(cls)
+
+    def __init__(self, path):
+        logging.info(f"Created QAProject:{path=}")
+        self.path = path
+
 
         
 if __name__ == "__main__":
@@ -73,4 +81,5 @@ if __name__ == "__main__":
     data_projects = (path for path in data_root.iterdir() if path.is_dir())
 
     for project in data_projects:
-        QAProject(project)
+        if QAProject.check(project):
+            QAProject(project)
