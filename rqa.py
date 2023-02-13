@@ -37,9 +37,14 @@ class QAProject():
               +-...
     """
     @classmethod
+    def _get_image_path(cls, project_root):
+        """Return path to subfolder of the project that should contain the images."""
+        return project_root / 'Images'
+
+    @classmethod
     def check(cls, path):
         """Check that the requirements of a QAProject are met."""
-        images_path = path / 'Images'
+        images_path = cls._get_image_path(path)
 
         if not images_path.exists() or not images_path.is_dir():
             logging.debug(f"Not a project '{path}': missing folder '{images_path.name}'.")
@@ -79,6 +84,7 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
     data_root = Path(arguments.qa_data)
     data_projects = (path for path in data_root.iterdir() if path.is_dir())
+
 
     for project in data_projects:
         if QAProject.check(project):
