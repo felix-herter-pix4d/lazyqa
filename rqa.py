@@ -79,6 +79,20 @@ class QAProject():
         self.path = path
 
 
+def is_part_of_git_repo(path: Path):
+    try:
+        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stderr=subprocess.DEVNULL, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def retrieve_sha_of_branch(branch: str, repo: Path):
+    retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
+                                          capture_output=True)
+    return retrieve_sha_result.stdout.strip()
+
+
 def check_binary(binary: Path):
     """Sanity checks on the binary."""
     if not binary.exists():
@@ -89,9 +103,7 @@ def check_binary(binary: Path):
         logging.critical(f"'{binary}' is not executable")
         sys.exit(-1)
 
-    try:
-        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], check=True)
-    except subprocess.CalledProcessError:
+    if not is_part_of_git_repo(binary.parent):
         logging.critical(f"'{binary}' is not inside of any repo. " +
                           "It is assumed to reside inside the main code repo.")
         sys.exit(-1)
@@ -99,12 +111,6 @@ def check_binary(binary: Path):
     # TODO: check touch time
 
 
-def retrieve_sha_of_branch(branch: str, repo: Path):
-    retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
-                                          capture_output=True)
-    return retrieve_sha_result.stdout.strip()
-
-        
 if __name__ == "__main__":
     parser = ArgumentParser(
        description = 'this is the rapid qa description'
