@@ -105,12 +105,12 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "projects",
-         help = "path to the QA data projects"
+         help = "Path to the QA data projects."
     )
 
     parser.add_argument(
         "binary",
-         help = "path to the binary under investigation"
+         help = "Path to the binary under investigation. It is assumed to be inside the code repo."
     )
 
     if len(sys.argv) < 2:
