@@ -14,6 +14,7 @@
 import sys
 import os
 import logging
+import subprocess
 from pathlib import Path
 from argparse import ArgumentParser
 from itertools import chain
@@ -97,6 +98,10 @@ def check_binary(binary: Path):
     # TODO: check touch time
 
 
+def retrieve_sha_of_branch(branch: str, repo: Path):
+    retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
+                                          capture_output=True)
+    return retrieve_sha_result.stdout.strip()
         
 if __name__ == "__main__":
     parser = ArgumentParser(
@@ -122,7 +127,7 @@ if __name__ == "__main__":
     
     binary = Path(arguments.binary)
     check_binary(binary)
+
+    head_sha = retrieve_sha_of_branch("HEAD", binary.parent)
+    print(f"retrieved HEAD sha {head_sha}")
     
-    stream = os.popen(f"git -C {binary.parent} rev-parse HEAD")
-    output = stream.read()
-    print("the output is: \n", output)
