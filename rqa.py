@@ -79,12 +79,23 @@ class QAProject():
 
 def check_binary(binary: Path):
     """Sanity checks on the binary."""
+    if not binary.exists():
+        logging.critical(f"'{binary}' not found.")
+        sys.exit(-1)
+
     if not os.access(binary, os.X_OK):
-        raise ValueError(f"'{binary}' is not executable")
+        logging.critical(f"'{binary}' is not executable")
+        sys.exit(-1)
 
-    #TODO: compare touch time.
+    try:
+        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], check=True)
+    except subprocess.CalledProcessError:
+        logging.critical(f"'{binary}' is not inside of any repo. " +
+                          "It is assumed to reside inside the main code repo.")
+        sys.exit(-1)
 
-    return True
+    # TODO: check touch time
+
 
         
 if __name__ == "__main__":
