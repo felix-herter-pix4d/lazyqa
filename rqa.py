@@ -22,11 +22,11 @@ from itertools import chain
 logging.basicConfig(level=logging.DEBUG)
 
 
-
 def _contains_tiffs(path):
     files = chain(path.glob('*.tif'), path.glob('*.tiff'), path.glob('*.jpg'), path.glob('*.jpeg')) # TODO: collect extensions somewhere and iterate here if possible
     try: next(files);     return True
     except StopIteration: return False
+
 
 class QAProject():
     """Class that represents a QA project.
@@ -78,6 +78,7 @@ class QAProject():
         logging.info(f"Created QAProject:{path=}")
         self.path = path
 
+
 def check_binary(binary: Path):
     """Sanity checks on the binary."""
     if not binary.exists():
@@ -102,6 +103,7 @@ def retrieve_sha_of_branch(branch: str, repo: Path):
     retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
                                           capture_output=True)
     return retrieve_sha_result.stdout.strip()
+
         
 if __name__ == "__main__":
     parser = ArgumentParser(
