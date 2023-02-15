@@ -30,7 +30,7 @@ def _contains_tiffs(path):
 
 class QAProject():
     """Class that represents a QA project.
-    
+
     It is initialized from a path to the QA project folder. This folder is
     assumed to contain a subfolder called 'Images' in which the dataset is
     stored as a set of images:
@@ -61,11 +61,11 @@ class QAProject():
         if not images_path.exists() or not images_path.is_dir():
             logging.debug(f"Not a project '{path}': missing folder '{images_path.name}'.")
             return False
-                
+
         if not _contains_tiffs(images_path):
             logging.debug(f"Not a project '{images_path}': no images found.")
             return False
-        
+
         return True
 
     def __new__(cls, path: Path):
