@@ -100,8 +100,7 @@ def retrieve_sha_of_branch(branch: str, repo: Path):
 
 def guess_main_branch(repo: Path):
     """Guess if 'master' or 'main' is used as main development branch."""
-    # We did not use `git ls-remote --heads origin ...` because with the
-    # approach below we avoid fetching the repo and save time
+    # We did not use `git ls-remote --heads origin ...` to avoid fetching the repo (slow)
     try:
         subprocess.run(["git", "-C", repo, "show-branch", "origin/master"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True )
         return "master"
