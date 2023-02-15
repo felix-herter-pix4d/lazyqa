@@ -95,28 +95,36 @@ def subprocess_check(command: list[str]):
         return False
 
 
+def git(*args, repo: Path=None):
+    command = ["git"]
+    if repo is not None:
+        command += ["-C", repo]
+    command.extend(args)
+    return subprocess_output(command)
+
+
 def is_part_of_git_repo(path: Path):
     """Check if path leads to a directory that is inside/part of a git repo."""
     try:
-        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
+        git("-C", path, "rev-parse", "--is-inside-work-tree")
         return True
     except subprocess.CalledProcessError:
         return False
 
 
 def get_merge_base(commit1: str, commit2: str, repo: Path):
-    return subprocess_output(["git", "-C", f"{binary.parent}", "merge-base", commit1, commit2])
+    return git("merge-base", commit1, commit2, repo=repo)
 
 
 def retrieve_sha_of_branch(branch: str, repo: Path):
-    return subprocess_output(["git", "-C", f"{repo}", "rev-parse", f"{branch}"])
+    return git("rev-parse", branch, repo=repo)
 
 
 def guess_main_branch(repo: Path):
     """Guess if 'master' or 'main' is used as main development branch."""
     # We did not use `git ls-remote --heads origin ...` to avoid fetching the repo (slow)
     try:
-        subprocess.run(["git", "-C", repo, "show-branch", "origin/master"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True )
+        git("show-branch", "origin/master", repo=repo)
         return "master"
     except subprocess.CalledProcessError:
         try:
