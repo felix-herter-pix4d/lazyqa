@@ -87,6 +87,11 @@ def is_part_of_git_repo(path: Path):
         return False
 
 
+def get_merge_base(commit1: str, commit2: str, repo: Path):
+    merge_base_result = subprocess.run(["git", "-C", f"{binary.parent}", "merge-base", commit1, commit2], capture_output=True)
+    return merge_base_result.stdout.strip()
+
+
 def retrieve_sha_of_branch(branch: str, repo: Path):
     retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
                                           capture_output=True)
@@ -158,4 +163,5 @@ if __name__ == "__main__":
     main_branch = guess_main_branch(binary.parent)
     logging.debug(f"main branch '{main_branch}'")
 
+    reference = get_merge_base(main_branch, head, binary.parent)
     
