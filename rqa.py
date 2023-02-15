@@ -130,11 +130,15 @@ def is_ancestor(commit1: str, commit2: str, repo: Path):
     return subprocess_check(["git", "-C", f"{repo}", "merge-base", "--is-ancestor", commit1, commit2])
 
 
-def commits_from_to(commit1: str, commit2: str, repo: Path):
+def commits_from_to(commit1: str, commit2: str, repo: Path, exclude_merges=False): # TODO: accept any git args
     """Retrieve sequence of commits from commit1 (exclusive) to commit2 (inclusive)."""
     if not is_ancestor(commit1, commit2, repo):
         raise RuntimeError(f"asked for commits from '{commit1}' to '{commit2}' but the first is not an ancestor of the second")
-    return subprocess_output(["git", "-C", f"{repo}", "log", "--format=format:%H", f"{commit1}..{commit2}"]).split()
+    command = ["git", "-C", f"{repo}", "log"]
+    if exclude_merges:
+        command += ["--no-merges"]
+    command +=  ["--format=format:%H", f"{commit1}..{commit2}"]
+    return subprocess_output(command).split()
 
 
 def check_binary(binary: Path):
@@ -189,8 +193,24 @@ if __name__ == "__main__":
     reference = get_merge_base(main_branch, head, binary.parent)
     logging.debug(f"merge-base (HEAD, {main_branch}) '{reference}'")
 
-    commits_missing_on_reference = commits_from_to(reference, head, binary.parent)
-    logging.debug(f"commits from merge-base to HEAD:{commits_missing_on_reference}")
+    non_merge_commits_missing_on_reference = commits_from_to(reference, head, binary.parent, exclude_merges=True)
+    logging.debug(f"commits from merge-base to HEAD:{non_merge_commits_missing_on_reference}")
+
+
+    # patch for commit
+
+    # patches for commits
+
+    # current patch (or is this a version of above?)
+
+    # TODO CONTINUE HERE: retrieve merge base between two commits, get patches for each commit
+    # TODO this script should be able to accept a reference sha (or guess a sensible default, like the last commit on master/main)
+    #  results that were made with a version that is committed have the sha as id, those with patches have sha + an increasing number.
+
+    #print(f"retrieved HEAD sha {head_sha}")
 
 
 
+    # 1. (DONE) if not a repo(binary) -> error
+    # 2. retrieve last common ancestor with master/main
+    # 3. allow the user to pass a custom reference branch
