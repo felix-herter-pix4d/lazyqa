@@ -75,8 +75,10 @@ class QAProject():
         return super().__new__(cls)
 
     def __init__(self, path: Path):
-        logging.info(f"Created QAProject:{path=}")
         self.path = path
+
+    def name(self):
+        return self.path.name
 
 
 def subprocess_output(command: list[str]):
@@ -119,6 +121,9 @@ class Repo():
             inside_repo = inside_repo.parent
         assert(is_part_of_git_repo(inside_repo))
         self.repo = git("rev-parse", "--show-toplevel", repo=inside_repo)
+
+    def path(self):
+        return self.repo
 
     def _git(self, *args):
         return git(*args, repo=self.repo)
@@ -190,12 +195,14 @@ if __name__ == "__main__":
 
     arguments = parser.parse_args()
     qa_projects_root = Path(arguments.projects)
-    qa_projects = (QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path))
+    qa_projects = [QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path)]
+    logging.info(f"found {len(qa_projects)} QA projects: {[p.name() for p in qa_projects]}")
 
     binary = Path(arguments.binary)
     check_binary(binary)
 
     repo = Repo(binary.parent)
+    logging.info(f"repo is '{repo.path()}'")
 
     head = repo.retrieve_sha_of_branch("HEAD")
     logging.debug(f"HEAD is at '{head}'")
