@@ -152,8 +152,8 @@ if __name__ == "__main__":
     binary = Path(arguments.binary)
     check_binary(binary)
 
-    head_sha = retrieve_sha_of_branch("HEAD", binary.parent)
-    logging.debug(f"HEAD is at '{head_sha}'")
+    head = retrieve_sha_of_branch("HEAD", binary.parent)
+    logging.debug(f"HEAD is at '{head}'")
 
     main_branch = guess_main_branch(binary.parent)
     logging.debug(f"main branch '{main_branch}'")
