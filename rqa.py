@@ -93,6 +93,22 @@ def retrieve_sha_of_branch(branch: str, repo: Path):
     return retrieve_sha_result.stdout.strip()
 
 
+def guess_main_branch(repo: Path):
+    """Guess if 'master' or 'main' is used as main development branch."""
+    # We did not use `git ls-remote --heads origin ...` because with the
+    # approach below we avoid fetching the repo and save time
+    try:
+        subprocess.run(["git", "-C", repo, "show-branch", "origin/master"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True )
+        return "master"
+    except subprocess.CalledProcessError:
+        try:
+            subprocess.run(["git", "-C", repo, "show-branch", "origin/main"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True )
+            return "main"
+        except subprocess.CalledProcessError:
+            raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
+
+
+
 def check_binary(binary: Path):
     """Sanity checks on the binary."""
     if not binary.exists():
@@ -137,5 +153,9 @@ if __name__ == "__main__":
     check_binary(binary)
 
     head_sha = retrieve_sha_of_branch("HEAD", binary.parent)
-    print(f"retrieved HEAD sha {head_sha}")
+    logging.debug(f"HEAD is at '{head_sha}'")
+
+    main_branch = guess_main_branch(binary.parent)
+    logging.debug(f"main branch '{main_branch}'")
+
     
