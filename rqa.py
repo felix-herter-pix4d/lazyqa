@@ -82,6 +82,7 @@ class QAProject():
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)
+    result.check_returncode()
     return result.stdout.decode('utf-8').strip()
 
 
