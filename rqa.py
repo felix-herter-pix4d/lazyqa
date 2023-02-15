@@ -84,6 +84,15 @@ def subprocess_output(command: list[str]):
     return result.stdout.decode('utf-8').strip()
 
 
+def subprocess_check(command: list[str]):
+    """Return True if the command was successful, False else"""
+    try:
+        subprocess.run(command, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
 def is_part_of_git_repo(path: Path):
     try:
         subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
@@ -113,6 +122,16 @@ def guess_main_branch(repo: Path):
         except subprocess.CalledProcessError:
             raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
 
+
+def is_ancestor(commit1: str, commit2: str, repo: Path):
+    return subprocess_check(["git", "-C", f"{repo}", "merge-base", "--is-ancestor", commit1, commit2])
+
+
+def commits_from_to(commit1: str, commit2: str, repo: Path):
+    """Retrieve sequence of commits from commit1 (exclusive) to commit2 (inclusive)."""
+    if not is_ancestor(commit1, commit2, repo):
+        raise RuntimeError(f"asked for commits from '{commit1}' to '{commit2}' but the first is not an ancestor of the second")
+    return subprocess_output(["git", "-C", f"{repo}", "log", "--format=format:%H", f"{commit1}..{commit2}"]).split()
 
 
 def check_binary(binary: Path):
@@ -150,11 +169,11 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         parser.print_help()
-        
+
     arguments = parser.parse_args()
     qa_projects_root = Path(arguments.projects)
     qa_projects = (QAProject(path) for path in qa_projects_root.iterdir() if QAProject.check(path))
-    
+
     binary = Path(arguments.binary)
     check_binary(binary)
 
@@ -165,4 +184,10 @@ if __name__ == "__main__":
     logging.debug(f"main branch '{main_branch}'")
 
     reference = get_merge_base(main_branch, head, binary.parent)
-    
+    logging.debug(f"merge base head-master '{reference}'")
+
+    commits_missing_on_reference = commits_from_to(reference, head, binary.parent)
+    logging.debug(f"commits from merge-base to HEAD:{commits_missing_on_reference}")
+
+
+
