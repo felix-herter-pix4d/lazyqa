@@ -80,6 +80,7 @@ class QAProject():
 
 
 def subprocess_output(command: list[str]):
+    """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)
     return result.stdout.decode('utf-8').strip()
 
@@ -94,6 +95,7 @@ def subprocess_check(command: list[str]):
 
 
 def is_part_of_git_repo(path: Path):
+    """Check if path leads to a directory that is inside/part of a git repo."""
     try:
         subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
         return True
@@ -184,7 +186,7 @@ if __name__ == "__main__":
     logging.debug(f"main branch '{main_branch}'")
 
     reference = get_merge_base(main_branch, head, binary.parent)
-    logging.debug(f"merge base head-master '{reference}'")
+    logging.debug(f"merge-base (HEAD, {main_branch}) '{reference}'")
 
     commits_missing_on_reference = commits_from_to(reference, head, binary.parent)
     logging.debug(f"commits from merge-base to HEAD:{commits_missing_on_reference}")
