@@ -81,7 +81,7 @@ class QAProject():
 
 def is_part_of_git_repo(path: Path):
     try:
-        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stderr=subprocess.DEVNULL, check=True)
+        subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
         return True
     except subprocess.CalledProcessError:
         return False
