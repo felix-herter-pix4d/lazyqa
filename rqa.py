@@ -79,6 +79,11 @@ class QAProject():
         self.path = path
 
 
+def subprocess_output(command: list[str]):
+    result = subprocess.run(command, capture_output=True)
+    return result.stdout.decode('utf-8').strip()
+
+
 def is_part_of_git_repo(path: Path):
     try:
         subprocess.run(["git", "-C", f"{binary.parent}", "rev-parse", "--is-inside-work-tree"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
@@ -88,14 +93,11 @@ def is_part_of_git_repo(path: Path):
 
 
 def get_merge_base(commit1: str, commit2: str, repo: Path):
-    merge_base_result = subprocess.run(["git", "-C", f"{binary.parent}", "merge-base", commit1, commit2], capture_output=True)
-    return merge_base_result.stdout.strip()
+    return subprocess_output(["git", "-C", f"{binary.parent}", "merge-base", commit1, commit2])
 
 
 def retrieve_sha_of_branch(branch: str, repo: Path):
-    retrieve_sha_result = subprocess.run(["git", "-C", f"{repo}", "rev-parse", f"{branch}"],
-                                          capture_output=True)
-    return retrieve_sha_result.stdout.strip()
+    return subprocess_output(["git", "-C", f"{repo}", "rev-parse", f"{branch}"])
 
 
 def guess_main_branch(repo: Path):
