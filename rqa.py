@@ -252,23 +252,28 @@ def increment_id(_id: str):
 
 
 def find_highest_id(sha1: str, qa_project_root: Path):
-    s = f"{sha1}_98_test"
-    print("s: ", s)
-    r = fr'(?<={sha1}{SEPARATOR})\d*(?={SEPARATOR})'
-    m = re.search(r, s)
-    print("highest id: ", m.group(0))
-    #test_outcomes = qa_project_root.glob(sha1 + "*")
-    #ms = (re.search(fr'(?<={sha1}{SEPARATOR})\d*(?={SEPARATOR})', x) for x in test_outcomes)
-    #ids = (m.group(0) for m in ms)
-    #print('ids: ', list(ids))
-    ##print("test outcomes: ", list(test_outcomes))
-    ## TODO: CONTINUE HERE
+    project_names = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
+    ids = {parse_test_case_name(name)['id'] for name in project_names}
+    return max(ids)
 
 
-def create_test_folder_name(project: QAProject, qa_project_root: Path, optionalDescription: str = None):
+def get_next_id(sha1: str, qa_project_root: Path):
+    return increment_id(find_highest_id(sha1, qa_project_root))
+
+
+def create_test_case_name(sha1: str, id: str, project_name: str, optional_description: str = None):
+    result =  sha1 + SEPARATOR + id + SEPARATOR + project_name
+    if optional_description is not None:
+        result += optional_description
+    return result
+
+
+def applesauce(project: QAProject, qa_project_root: Path, optionalDescription: str = None):
+    pass
+    sha1 =
     # TODO:
-    # * get sha
-    # * get next id
+    # * get sha (repo)
+    # * get next id (sha, qa_project_root)
     # * return folder name
 
 
@@ -313,22 +318,3 @@ if __name__ == "__main__":
 
     non_merge_commits_missing_on_reference = repo.commits_from_to(reference, head, "--no-merges")
     logging.debug(f"commits from merge-base to HEAD:{non_merge_commits_missing_on_reference}")
-
-
-    # patch for commit
-
-    # patches for commits
-
-    # current patch (or is this a version of above?)
-
-    # TODO CONTINUE HERE: retrieve merge base between two commits, get patches for each commit
-    # TODO this script should be able to accept a reference sha (or guess a sensible default, like the last commit on master/main)
-    #  results that were made with a version that is committed have the sha as id, those with patches have sha + an increasing number.
-
-    #print(f"retrieved HEAD sha {head_sha}")
-
-
-
-    # 1. (DONE) if not a repo(binary) -> error
-    # 2. retrieve last common ancestor with master/main
-    # 3. allow the user to pass a custom reference branch
