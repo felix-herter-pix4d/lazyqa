@@ -210,6 +210,37 @@ def check_binary(binary: Path):
     # TODO: check touch time
 
 
+def test_case_name_regex():
+    """Returns a regex matching the individual components of a test caste name.
+
+    Usage:
+    >>> m = re.match(test_case_name_regex(), "1234567890_001_snowyHillside_increasedStepSizeTo42")
+    >>> m.group(1)  = '1234567890'
+    >>> m.group(2)  = '001'
+    >>> m.group(3)  = 'snowyHillside'
+    >>> m.group(4)  = 'increasedStepSizeTo42'
+    """
+    sha1 = fr"[^\W_]+" # [^\W_]: alphanumeric without underscore
+    _id = fr"\d+"
+    project_name = fr"[^\W_]+"              # [^\W_]: alphanumeric without underscore
+    optional_user_description = fr"[^\W_]*" # [^\W_]: alphanumeric without underscore
+    return re.compile(fr"({sha1}){SEPARATOR}({_id}){SEPARATOR}({project_name}){SEPARATOR}?({optional_user_description})")
+
+
+def parse_test_case_name(name: str):
+    """Returns a dict of the components of the test case name."""
+    m = test_case_name_regex().match(name)
+    return {"sha1" : m.group(1),
+            "id" : m.group(2),
+            "dataset_name" : m.group(3),
+            "optional_description" : m.group(4)}
+
+
+def is_test_case_name(s: str):
+    """Check if s fits the test case name convention."""
+    return bool(test_case_name_regex().match(s))
+
+
 def find_highest_id(sha1: str, qa_project_root: Path):
     s = f"{sha1}_98_test"
     print("s: ", s)
