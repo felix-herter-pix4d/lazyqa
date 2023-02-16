@@ -152,6 +152,9 @@ class Repo():
     def retrieve_sha_of_branch(self, branch: str):
         return self._git("rev-parse", branch)
 
+    def get_short_sha1(self, sha1: str):
+        return self._git("rev-parse", "--short", sha1)
+
     def guess_main_branch(self):
         """Guess if 'master' or 'main' is used as main development branch."""
         # We did not use `git ls-remote --heads origin ...` to avoid fetching the repo (slow)
