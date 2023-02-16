@@ -159,7 +159,7 @@ class Repo():
     def get_merge_base(self, commit1: str, commit2: str):
         return self._git("merge-base", commit1, commit2)
 
-    def retrieve_sha_of_branch(self, branch: str):
+    def get_sha_of_branch(self, branch: str):
         return self._git("rev-parse", branch)
 
     def get_short_sha1(self, sha1: str):
@@ -252,8 +252,8 @@ def increment_id(_id: str):
 
 
 def find_highest_id(sha1: str, qa_project_root: Path):
-    project_names = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
-    ids = {parse_test_case_name(name)['id'] for name in project_names}
+    project_names_matching_sha1 = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
+    ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
     return max(ids)
 
 
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     repo = Repo(binary.parent)
     logging.info(f"repo is '{repo.path()}'")
 
-    head = repo.retrieve_sha_of_branch("HEAD")
+    head = repo.get_sha_of_branch("HEAD")
     logging.debug(f"HEAD is at '{head}'")
 
     main_branch = repo.guess_main_branch()
