@@ -84,7 +84,6 @@ def is_part_of_git_repo(path: Path):
 
 def camel_case(s: str):
     components = re.split("_| |\.|-", s)
-    print("components: ", str(components))
     return components[0] + "".join(c.title() for c in components[1:])
 
 
