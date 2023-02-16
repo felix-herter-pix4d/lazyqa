@@ -254,7 +254,8 @@ def increment_id(_id: str):
 def find_highest_id(sha1: str, qa_project_root: Path):
     project_names_matching_sha1 = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
     ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
-    return max(ids)
+    first_id = '0' * (ID_LEN - 1) + '1'
+    return first_id if not ids else max(ids)
 
 
 def get_next_id(sha1: str, qa_project_root: Path):
