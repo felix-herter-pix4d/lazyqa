@@ -190,6 +190,7 @@ class Repo():
 
 #-------------------------------------------------------------------------specific helpers
 SEPARATOR = '_'
+ID_LEN = 3 # length of the id component in the test case name, e.g. 005
 
 
 def check_binary(binary: Path):
@@ -243,12 +244,11 @@ def is_test_case_name(s: str):
 
 def increment_id(_id: str):
     """Return the next id as zero-padded, fixed-length string."""
-    l = len(_id)
-    mod = 10**l
+    mod = 10**ID_LEN
     next_id = str((int(_id) + 1) % mod)
     if next_id == '0': # we start at 1
         next_id = '1'
-    return "0" * (l - len(next_id)) + next_id
+    return '0' * (ID_LEN - len(next_id)) + next_id
 
 
 def find_highest_id(sha1: str, qa_project_root: Path):
