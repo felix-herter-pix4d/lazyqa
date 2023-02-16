@@ -28,16 +28,43 @@
 # test suits to the change that they test, e.g.,
 #
 #    1234567890_001_snowyHillside_increasedStepSizeTo42
+#
 
-import sys
-import os
+
 import logging
+import os
+import re
 import subprocess
+import sys
 from pathlib import Path
 from argparse import ArgumentParser
 from itertools import chain
 
 logging.basicConfig(level=logging.DEBUG)
+
+#-----------------------------------------------------------------------------misc helpers
+def subprocess_output(command: list[str]):
+    """Return stdout of the command."""
+    result = subprocess.run(command, capture_output=True)
+    result.check_returncode()
+    return result.stdout.decode('utf-8').strip()
+
+
+def subprocess_check(command: list[str]):
+    """Return True if the command was successful, False else"""
+    try:
+        subprocess.run(command, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def git(*args, repo: Path=None):
+    command = ["git"]
+    if repo is not None:
+        command += ["-C", repo]
+    command.extend(args)
+    return subprocess_output(command)
 
 
 def _contains_tiffs(path):
@@ -46,6 +73,22 @@ def _contains_tiffs(path):
     except StopIteration: return False
 
 
+def is_part_of_git_repo(path: Path):
+    """Check if path leads to a directory that is inside/part of a git repo."""
+    try:
+        git("-C", path, "rev-parse", "--is-inside-work-tree")
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def camel_case(s: str):
+    components = re.split("_| |\.|-", s)
+    print("components: ", str(components))
+    return components[0] + "".join(c.title() for c in components[1:])
+
+
+#----------------------------------------------------------------------------------classes
 class QAProject():
     """Class that represents a QA project.
 
@@ -99,39 +142,6 @@ class QAProject():
         return self.path.name
 
 
-def subprocess_output(command: list[str]):
-    """Return stdout of the command."""
-    result = subprocess.run(command, capture_output=True)
-    result.check_returncode()
-    return result.stdout.decode('utf-8').strip()
-
-
-def subprocess_check(command: list[str]):
-    """Return True if the command was successful, False else"""
-    try:
-        subprocess.run(command, check=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-
-def git(*args, repo: Path=None):
-    command = ["git"]
-    if repo is not None:
-        command += ["-C", repo]
-    command.extend(args)
-    return subprocess_output(command)
-
-
-def is_part_of_git_repo(path: Path):
-    """Check if path leads to a directory that is inside/part of a git repo."""
-    try:
-        git("-C", path, "rev-parse", "--is-inside-work-tree")
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-
 class Repo():
     """A class that exposes some git functionality."""
     def __init__(self, inside_repo: Path):
@@ -178,6 +188,10 @@ class Repo():
         return self._git("log", *args, *command).split()
 
 
+#-------------------------------------------------------------------------specific helpers
+SEPARATOR = '_'
+
+
 def check_binary(binary: Path):
     """Sanity checks on the binary."""
     if not binary.exists():
@@ -196,10 +210,26 @@ def check_binary(binary: Path):
     # TODO: check touch time
 
 
-def camel_case(s: str):
-    components = re.split("_| |\.|-", s)
-    print("components: ", str(components))
-    return components[0] + "".join(c.title() for c in components[1:])
+def find_highest_id(sha1: str, qa_project_root: Path):
+    s = f"{sha1}_98_test"
+    print("s: ", s)
+    r = fr'(?<={sha1}{SEPARATOR})\d*(?={SEPARATOR})'
+    m = re.search(r, s)
+    print("highest id: ", m.group(0))
+    #test_outcomes = qa_project_root.glob(sha1 + "*")
+    #ms = (re.search(fr'(?<={sha1}{SEPARATOR})\d*(?={SEPARATOR})', x) for x in test_outcomes)
+    #ids = (m.group(0) for m in ms)
+    #print('ids: ', list(ids))
+    ##print("test outcomes: ", list(test_outcomes))
+    ## TODO: CONTINUE HERE
+
+
+def create_test_folder_name(project: QAProject, qa_project_root: Path, optionalDescription: str = None):
+    # TODO:
+    # * get sha
+    # * get next id
+    # * return folder name
+
 
 
 if __name__ == "__main__":
