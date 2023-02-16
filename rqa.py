@@ -193,6 +193,12 @@ def check_binary(binary: Path):
     # TODO: check touch time
 
 
+def camel_case(s: str):
+    components = re.split("_| |\.|-", s)
+    print("components: ", str(components))
+    return components[0] + "".join(c.title() for c in components[1:])
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(
        description = 'this is the rapid qa description'
