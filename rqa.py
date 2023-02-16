@@ -146,7 +146,7 @@ class Repo():
     def __init__(self, inside_repo: Path):
         if not inside_repo.is_dir(): # passed path to file inside of repo?
             inside_repo = inside_repo.parent
-        assert(is_part_of_git_repo(inside_repo))
+        assert is_part_of_git_repo(inside_repo), f"Path '{inside_repo}' must lead into a git repo."
         self.repo = git("rev-parse", "--show-toplevel", repo=inside_repo)
 
     def path(self):
@@ -253,29 +253,32 @@ def increment_id(_id: str):
 def find_highest_id(sha1: str, qa_project_root: Path):
     project_names_matching_sha1 = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
     ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
-    first_id = '0' * (ID_LEN - 1) + '1'
-    return first_id if not ids else max(ids)
+    zero_id = '0' * ID_LEN
+    return zero_id if not ids else max(ids)
 
 
 def get_next_id(sha1: str, qa_project_root: Path):
     return increment_id(find_highest_id(sha1, qa_project_root))
 
 
-def create_test_case_name(sha1: str, id: str, project_name: str, optional_description: str = None):
-    result =  sha1 + SEPARATOR + id + SEPARATOR + project_name
+def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):
+    result =  sha1 + SEPARATOR + _id + SEPARATOR + camel_case(project_name)
     if optional_description is not None:
-        result += optional_description
+        result += '_' + camel_case(optional_description)
     return result
 
 
-def applesauce(project: QAProject, qa_project_root: Path, optionalDescription: str = None):
-    pass
-    sha1 =
-    # TODO:
-    # * get sha (repo)
-    # * get next id (sha, qa_project_root)
-    # * return folder name
-
+def create_test_case_folder(qa_project: QAProject,
+                            qa_project_roots: Path, # TODO: can be taken from QAProject?
+                            repo: Repo,
+                            optional_description: str = None):
+    head_sha1 = repo.get_short_sha1(repo.get_sha_of_branch("HEAD"))
+    _id = get_next_id(head_sha1, qa_projects_root)
+    test_case_name = create_test_case_name(head_sha1, _id, qa_project.name(), optional_description)
+    test_case_path = qa_project_roots / test_case_name
+    assert not test_case_path.exists(), f"Test case path '{test_case_path} already exists.'"
+    os.mkdir(test_case_path)
+    logging.debug(f"Created test case folder '{test_case_path}'.")
 
 
 if __name__ == "__main__":
@@ -307,14 +310,4 @@ if __name__ == "__main__":
     repo = Repo(binary.parent)
     logging.info(f"repo is '{repo.path()}'")
 
-    head = repo.get_sha_of_branch("HEAD")
-    logging.debug(f"HEAD is at '{head}'")
-
-    main_branch = repo.guess_main_branch()
-    logging.debug(f"main branch '{main_branch}'")
-
-    reference = repo.get_merge_base(main_branch, head)
-    logging.debug(f"merge-base (HEAD, {main_branch}) '{reference}'")
-
-    non_merge_commits_missing_on_reference = repo.commits_from_to(reference, head, "--no-merges")
-    logging.debug(f"commits from merge-base to HEAD:{non_merge_commits_missing_on_reference}")
+    create_test_case_folder(qa_projects[0], qa_projects_root, repo, "this is a description")
