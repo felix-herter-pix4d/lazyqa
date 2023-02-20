@@ -282,6 +282,10 @@ def create_test_case_folder(qa_project: QAProject,
 
 
 if __name__ == "__main__":
+    # assumptions:
+    # * binary is inside the repo (can be validated)
+    # * binary was generated from the current state in the repo
+    # * there is a main branch named 'master' or 'main' (can be validated)
     parser = ArgumentParser(
        description = 'this is the rapid qa description'
     )
