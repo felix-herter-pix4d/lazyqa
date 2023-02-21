@@ -50,10 +50,22 @@ echo_call_program = "echo $0 $@"
 def repo_with_call_inspection_executable(tmp_path, dummy_test_pipeline=echo_call_program):
     """Fixture that yields a repo with an executable."""
     executable_path = tmp_path / "app"
-    with open(executable_path, "w") as f:
+    with open(executable_path, 'w') as f:
         f.write(dummy_test_pipeline)
     os.chmod(executable_path, 0o700) # owner may read, write, or execute
     yield {'repo': tmp_path, 'executable': executable_path}
+
+
+def insert_dummy_images(path: Path):
+    for img in ['img_01.TIF', 'img_02.TIF']:
+        (path / img).touch()
+
+
+def insert_dummy_config(path: Path):
+    config_path = path / 'config.txt'
+    with open(config_path, 'w') as f:
+        f.write("I'm a dummy config file.")
+    return config_path
 
 
 @pytest.fixture
@@ -71,9 +83,8 @@ def environment_for_test_pipeline(repo_with_call_inspection_executable):
     app_path = repo_with_call_inspection_executable['executable']
     images_path = repo_path.parent / 'images'
     images_path.mkdir()
-    for img in ['img_01.TIF', 'img_02.TIF']:
-        (images_path / img).touch()
-    config_path = 'dummy/config/path'
+    insert_dummy_images(images_path)
+    config_path = insert_dummy_config(repo_path.parent)
     out_path = 'dummy/out/path'
     return {'repo_path': repo_path,
             'app_path': app_path,
