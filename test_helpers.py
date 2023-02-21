@@ -57,7 +57,7 @@ def repo_with_call_inspection_executable(tmp_path, dummy_test_pipeline=echo_call
 
 
 @pytest.fixture
-def testpipeline_environment(repo_with_call_inspection_executable):
+def environment_for_test_pipeline(repo_with_call_inspection_executable):
     """Fixture that yields a complete environment for test_pipeline.
 
     This comprises
@@ -115,11 +115,11 @@ def test_get_next_id_returns_the_correct_id_new_sha1(tmp_dir_with_qa_test_cases)
 
 
 #-----------------------------------------------------------------------test rtp
-def test_call_test_pipeline_executes_the_expected_command(testpipeline_environment):
-    app_path = testpipeline_environment['app_path']
-    images_path = testpipeline_environment['images_path']
-    out_path = testpipeline_environment['out_path']
-    config_path = testpipeline_environment['config_path']
+def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
+    app_path = environment_for_test_pipeline['app_path']
+    images_path = environment_for_test_pipeline['images_path']
+    out_path = environment_for_test_pipeline['out_path']
+    config_path = environment_for_test_pipeline['config_path']
 
     command_triggered = rtp.test_pipeline(app_path=app_path,
                                           out_path=out_path,
