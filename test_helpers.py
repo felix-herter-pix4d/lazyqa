@@ -67,6 +67,14 @@ def testpipeline_environment(repo_with_call_inspection_executable):
             'config_path': config_path,
             'out_path': out_path}
 
+
+#--------------------------------------------------------------test misc helpers
+def test_camel_case_removes_all_forbidden_symbols():
+    non_camel_case_string = "one_two.three_four five six-seven.height-nine"
+    camel_case_string = "oneTwoThreeFourFiveSixSevenHeightNine"
+    assert helpers.camel_case(non_camel_case_string) == camel_case_string
+
+
 #----------------------------------------------------------------------test Repo
 def test_repo_class_can_be_constructed_from_repo_path(tmp_repo):
     helpers.Repo(tmp_repo)

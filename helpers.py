@@ -1,5 +1,14 @@
+import re
 import subprocess
 from pathlib import Path
+
+
+#-------------------------------------------------------------------misc helpers
+def camel_case(s: str):
+    """Turn s into camel case, removing any of the symbols in '_ .-'"""
+    components = re.split("_| |\.|-", s)
+    return components[0] + "".join(c.title() for c in components[1:])
+
 
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
