@@ -40,20 +40,23 @@ def tmp_dir_with_qa_test_cases(tmp_path):
 @pytest.fixture
 def tmp_repo(tmp_path):
     """Fixture that yields a temporary git repository."""
-    git('init', tmp_path)
-    return tmp_path
+    repo = (tmp_path / 'repo')
+    repo.mkdir()
+    git('init', repo)
+    return repo
 
 
 echo_call_program = "echo $0 $@"
 
+
 @pytest.fixture
-def repo_with_call_inspection_executable(tmp_path, dummy_test_pipeline=echo_call_program):
+def repo_with_call_inspection_executable(tmp_repo, dummy_test_pipeline=echo_call_program):
     """Fixture that yields a repo with an executable."""
-    executable_path = tmp_path / "app"
+    executable_path = tmp_repo / "app"
     with open(executable_path, 'w') as f:
         f.write(dummy_test_pipeline)
     os.chmod(executable_path, 0o700) # owner may read, write, or execute
-    yield {'repo': tmp_path, 'executable': executable_path}
+    yield {'repo': tmp_repo, 'executable': executable_path}
 
 
 def insert_dummy_images(path: Path):
@@ -108,6 +111,22 @@ def test_repo_class_can_be_constructed_from_repo_path(tmp_repo):
 def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
     with pytest.raises(helpers.Repo.NotARepoException):
         helpers.Repo(tmp_path)
+
+
+#-----------------------------------------------------------------test_QAProject
+def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(environment_for_test_pipeline):
+    helpers.QAProject(environment_for_test_pipeline['images_path'].parent)
+
+
+def test_qa_project_class_cannot_be_created_when_images_directory_is_missing(tmp_path):
+    with pytest.raises(helpers.QAProject.LayoutError):
+        helpers.QAProject(tmp_path)
+
+
+def test_qa_project_class_cannot_be_created_when_images_directory_contains_no_images(tmp_path):
+    (tmp_path / 'images').mkdir()
+    with pytest.raises(helpers.QAProject.LayoutError):
+        helpers.QAProject(tmp_path)
 
 
 #----------------------------------------------------------test specific helpers

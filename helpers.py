@@ -1,3 +1,4 @@
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -83,6 +84,66 @@ class Repo():
         assert(self.is_ancestor(commit1, commit2))
         command =  ("--format=format:%H", f"{commit1}..{commit2}")
         return self._git("log", *args, *command).split()
+
+
+#----------------------------------------------------------------------QAProject
+class QAProject():
+    """Class that represents a QA project.
+
+    It is initialized from a path to the QA project folder that fulfills the
+    following layout assumptions: There is a subfolder 'images' in which the
+    dataset is stored as a set of images:
+
+        DataFolder
+          |
+          +-images
+              |
+              +-img-001.tiff
+              |
+              +-img-002.tiff
+              |
+              +-...
+    """
+    class LayoutError(Exception):
+        """Some assumptions about the directory layout are not fulfilled."""
+        pass
+
+    @staticmethod
+    def _contains_tiffs(path):
+        from itertools import chain
+        image_extensions = ('tif', 'TIF', 'tiff', 'TIFF', 'jpg', 'JPG', 'jpeg', 'JPEG')
+        files = chain(*(path.glob(f'*.{extension}') for extension in image_extensions))
+        try: next(files);     return True
+        except StopIteration: return False
+
+    @classmethod
+    def _get_image_path(cls, project_root: Path):
+        """Return path to subfolder of the project that should contain the images."""
+        return project_root / 'images'
+
+    @classmethod
+    def check(cls, path: Path):
+        """Check that the requirements of a QAProject are met."""
+        if not path.is_dir():
+            raise cls.LayoutError(f"directory '{path}' not found.")
+
+        images_path = cls._get_image_path(path)
+        if not images_path.exists() or not images_path.is_dir():
+            raise cls.LayoutError(f"'{path}' missing folder '{images_path.name}'.")
+
+        if not cls._contains_tiffs(images_path):
+            raise cls.LayoutError(f"no images found in '{images_path.name}'.")
+
+    def __new__(cls, path: Path):
+        """Ensure that the requirements of a QAProject are met before creating an instance."""
+        cls.check(path)
+        return super().__new__(cls)
+
+    def __init__(self, path: Path):
+        self.path = path
+
+    def name(self):
+        return self.path.name
 
 
 #-------------------------------------------------------------------------specific helpers
