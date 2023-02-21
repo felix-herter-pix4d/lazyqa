@@ -69,7 +69,7 @@ def environment_for_test_pipeline(repo_with_call_inspection_executable):
     """
     repo_path = repo_with_call_inspection_executable['repo']
     app_path = repo_with_call_inspection_executable['executable']
-    images_path = repo_path.parent / 'Images'
+    images_path = repo_path.parent / 'images'
     images_path.mkdir()
     for img in ['img_01.TIF', 'img_02.TIF']:
         (images_path / img).touch()
