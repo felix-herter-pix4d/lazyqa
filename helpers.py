@@ -121,6 +121,13 @@ def is_test_case_name(s: str):
     return bool(test_case_name_regex().match(s))
 
 
+def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):
+    result =  sha1 + SEPARATOR + _id + SEPARATOR + camel_case(project_name)
+    if optional_description is not None:
+        result += '_' + camel_case(optional_description)
+    return result
+
+
 def increment_id(_id: str):
     """Return the next id as zero-padded, fixed-length string."""
     mod = 10**ID_LEN

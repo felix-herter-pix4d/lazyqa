@@ -113,6 +113,22 @@ def test_get_next_id_returns_the_correct_id_new_sha1(tmp_dir_with_qa_test_cases)
     next_id = helpers.get_next_id(sha1, out_path)
     assert next_id == '001' # no folders begin with `1337`
 
+def test_qa_test_case_names_are_correct_when_no_description_given():
+    sha1 = '1234567890'
+    _id = '001'
+    project_name = 'snowy_Hillside'
+    test_case_name = helpers.create_test_case_name(sha1, _id, project_name)
+    assert test_case_name == '1234567890_001_snowyHillside'
+
+
+def test_qa_test_case_names_are_correct_when_description_given():
+    sha1 = '1234567890'
+    _id = '001'
+    project_name = 'snowy_Hillside'
+    description = "increasedStepSizeTo42"
+    test_case_name = helpers.create_test_case_name(sha1, _id, project_name, description)
+    assert test_case_name == '1234567890_001_snowyHillside_increasedStepSizeTo42'
+
 
 #-----------------------------------------------------------------------test rtp
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
