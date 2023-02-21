@@ -33,6 +33,8 @@ def is_part_of_git_repo(path: Path):
     except subprocess.CalledProcessError:
         return False
 
+
+#---------------------------------------------------------------------------Repo
 class Repo():
     """A class that exposes some git functionality."""
     class NotARepoException(Exception):
@@ -82,3 +84,65 @@ class Repo():
         command =  ("--format=format:%H", f"{commit1}..{commit2}")
         return self._git("log", *args, *command).split()
 
+
+#-------------------------------------------------------------------------specific helpers
+SEPARATOR = '_'
+ID_LEN = 3 # length of the id component in the test case name, e.g. 005
+
+
+def test_case_name_regex():
+    """Returns a regex matching the individual components of a test caste name.
+
+    Usage:
+    >>> m = re.match(test_case_name_regex(), "1234567890_001_snowyHillside_increasedStepSizeTo42")
+    >>> m.group(1)  = '1234567890'
+    >>> m.group(2)  = '001'
+    >>> m.group(3)  = 'snowyHillside'
+    >>> m.group(4)  = 'increasedStepSizeTo42'
+    """
+    sha1 = fr"[^\W_]+" # [^\W_]: alphanumeric without underscore
+    _id = fr"\d+"
+    project_name = fr"[^\W_]+"              # [^\W_]: alphanumeric without underscore
+    optional_user_description = fr"[^\W_]*" # [^\W_]: alphanumeric without underscore
+    return re.compile(fr"({sha1}){SEPARATOR}({_id}){SEPARATOR}({project_name}){SEPARATOR}?({optional_user_description})")
+
+
+def parse_test_case_name(name: str):
+    """Returns a dict of the components of the test case name."""
+    m = test_case_name_regex().match(name)
+    return {"sha1" : m.group(1),
+            "id" : m.group(2),
+            "dataset_name" : m.group(3),
+            "optional_description" : m.group(4)}
+
+
+def is_test_case_name(s: str):
+    """Check if s fits the test case name convention."""
+    return bool(test_case_name_regex().match(s))
+
+
+def increment_id(_id: str):
+    """Return the next id as zero-padded, fixed-length string."""
+    mod = 10**ID_LEN
+    next_id = str((int(_id) + 1) % mod)
+    if next_id == '0': # we start at 1
+        next_id = '1'
+    return '0' * (ID_LEN - len(next_id)) + next_id
+
+
+def find_highest_id(sha1: str, qa_project_root: Path):
+    project_names_matching_sha1 = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
+    ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
+    zero_id = '0' * ID_LEN
+    return zero_id if not ids else max(ids)
+
+
+def get_next_id(sha1: str, qa_project_root: Path):
+    return increment_id(find_highest_id(sha1, qa_project_root))
+
+
+def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):
+    result =  sha1 + SEPARATOR + _id + SEPARATOR + camel_case(project_name)
+    if optional_description is not None:
+        result += '_' + camel_case(optional_description)
+    return result

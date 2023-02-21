@@ -24,6 +24,20 @@ def git(*args, repo: Path=None):
 
 
 @pytest.fixture
+def tmp_dir_with_qa_test_cases(tmp_path):
+    """Fixture that yields a directory with some folders inside.
+
+    Specifically there are folders
+    * 1234_001_project1_userDescription
+    * 1234_003_project1_userDescription
+    """
+    for directory_name in ('1234_001_project1_userDescription',
+                           '1234_003_project1_userDescription'):
+        (tmp_path / directory_name).mkdir()
+    yield tmp_path
+
+
+@pytest.fixture
 def tmp_repo(tmp_path):
     """Fixture that yields a temporary git repository."""
     git('init', tmp_path)
@@ -83,6 +97,21 @@ def test_repo_class_can_be_constructed_from_repo_path(tmp_repo):
 def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
     with pytest.raises(helpers.Repo.NotARepoException):
         helpers.Repo(tmp_path)
+
+
+#----------------------------------------------------------test specific helpers
+def test_get_next_id_returns_the_correct_id_for_existing_sha1(tmp_dir_with_qa_test_cases):
+    sha1 = '1234'
+    out_path = tmp_dir_with_qa_test_cases
+    next_id = helpers.get_next_id(sha1, out_path)
+    assert next_id == '004' # 003 is highest id for folders beginning with '1234'
+
+
+def test_get_next_id_returns_the_correct_id_new_sha1(tmp_dir_with_qa_test_cases):
+    sha1 = '1337'
+    out_path = tmp_dir_with_qa_test_cases
+    next_id = helpers.get_next_id(sha1, out_path)
+    assert next_id == '001' # no folders begin with `1337`
 
 
 #-----------------------------------------------------------------------test rtp
