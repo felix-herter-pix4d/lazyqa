@@ -1,5 +1,5 @@
 import helpers
-import rtp
+import lazytp as ltp
 
 import os
 import pytest
@@ -159,10 +159,10 @@ def test_qa_test_case_names_are_correct_when_description_given():
     assert test_case_name == '001_1234567890_snowyHillside_increasedStepSizeTo42'
 
 
-#-----------------------------------------------------------------------test rtp
+#-----------------------------------------------------------------------test ltp
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
     env = environment_for_test_pipeline
-    command_triggered = rtp.test_pipeline(app_path = env['app_path'],
+    command_triggered = ltp.test_pipeline(app_path = env['app_path'],
                                           out_path = env['out_path'],
                                           config_path = env['config_path'],
                                           images_path = env['images_path'])
@@ -178,7 +178,7 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
     out_path = tmp_dir_with_qa_test_cases
     os.chdir(env['config_path'].parent)
 
-    result = rtp.lazy_test_pipeline(app_path = env['app_path'],
+    result = ltp.lazy_test_pipeline(app_path = env['app_path'],
                                     out_path = out_path,
                                     images_path = env['images_path'])
 
@@ -196,7 +196,7 @@ def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_p
     env = environment_for_test_pipeline
     out_path = tmp_dir_with_qa_test_cases
 
-    result = rtp.lazy_test_pipeline(app_path = env['app_path'],
+    result = ltp.lazy_test_pipeline(app_path = env['app_path'],
                                     out_path = out_path,
                                     images_path = env['images_path'])
     repo = helpers.Repo(env['repo_path'])
