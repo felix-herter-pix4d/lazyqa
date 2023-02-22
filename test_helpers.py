@@ -39,7 +39,7 @@ def out_dir_with_qa_test_cases(tmp_path):
 
 
 @pytest.fixture
-def tmp_repo(tmp_path):
+def repo_dir(tmp_path):
     """Fixture that yields a temporary git repository."""
     repo = (tmp_path / 'repo')
     repo.mkdir()
@@ -52,16 +52,16 @@ echo_call_program = "echo $0 $@"
 
 
 @pytest.fixture
-def repo_with_executable(tmp_repo):
+def repo_with_executable(repo_dir):
     """Fixture that yields a repo with an executable."""
 
     def _impl(executable=echo_call_program):
         """Inner function to enable injecting different executables into the fixture."""
-        executable_path = tmp_repo / "app"
+        executable_path = repo_dir / "app"
         with open(executable_path, 'w') as f:
             f.write(executable)
         os.chmod(executable_path, 0o700) # owner may read, write, or execute
-        return {'repo': tmp_repo, 'executable': executable_path}
+        return {'repo': repo_dir, 'executable': executable_path}
 
     yield _impl
 
@@ -69,6 +69,16 @@ def repo_with_executable(tmp_repo):
 def insert_dummy_images(path: Path):
     for img in ['img_01.TIF', 'img_02.TIF']:
         (path / img).touch()
+
+
+@pytest.fixture
+def qa_project_with_images(tmp_path):
+    """Fixture that yields a QA project with subdirectory 'images' that contains dummy images."""
+    qa_project_path = tmp_path / 'snowy_hillside'
+    images_path = qa_project_path / 'images'
+    images_path.mkdir(parents=True, exist_ok=True)
+    insert_dummy_images(images_path)
+    yield {'qa_project_path': qa_project_path, 'images_path': images_path}
 
 
 def insert_dummy_config(path: Path):
@@ -79,7 +89,9 @@ def insert_dummy_config(path: Path):
 
 
 @pytest.fixture
-def environment_for_test_pipeline(repo_with_executable):
+def environment_for_test_pipeline(repo_with_executable,
+                                  qa_project_with_images,
+                                  out_dir_with_qa_test_cases):
     """Fixture that yields a complete environment for test_pipeline.
 
     This comprises
@@ -92,11 +104,9 @@ def environment_for_test_pipeline(repo_with_executable):
     repo_with_call_inspection_executable = repo_with_executable(echo_call_program)
     repo_path = repo_with_call_inspection_executable['repo']
     app_path = repo_with_call_inspection_executable['executable']
-    images_path = repo_path.parent / 'images'
-    images_path.mkdir()
-    insert_dummy_images(images_path)
+    images_path = qa_project_with_images['images_path']
     config_path = insert_dummy_config(repo_path.parent)
-    out_path = 'dummy/out/path'
+    out_path = out_dir_with_qa_test_cases
     return {'repo_path': repo_path,
             'app_path': app_path,
             'images_path': images_path,
@@ -112,8 +122,8 @@ def test_camel_case_removes_all_forbidden_symbols():
 
 
 #----------------------------------------------------------------------test Repo
-def test_repo_class_can_be_constructed_from_repo_path(tmp_repo):
-    helpers.Repo(tmp_repo)
+def test_repo_class_can_be_constructed_from_repo_path(repo_dir):
+    helpers.Repo(repo_dir)
 
 
 def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
@@ -172,14 +182,12 @@ def test_call_test_pipeline_executes_the_expected_command(environment_for_test_p
     assert command_triggered == expected_command
 
 
-def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
-                                               out_dir_with_qa_test_cases):
+def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     env = environment_for_test_pipeline
-    out_path = out_dir_with_qa_test_cases
     os.chdir(env['config_path'].parent)
 
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                    out_path = out_path,
+                                    out_path = env['out_path'],
                                     images_path = env['images_path'])
 
     expected_substring = '-f config.txt'
@@ -187,17 +195,10 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
 
 
 @pytest.mark.skip(reason='WIP')
-def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline,
-                                                          out_dir_with_qa_test_cases):
-    #TODO: would be nice if the environment had a project folder with a project name
-    #      and an images subfolder, as well as a clear output folder with some existing
-    #      'previous results'. So tmp_dir_with_qa_test_cases may be merged into
-    #      environment_for_test_pipeline
+def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline):
     env = environment_for_test_pipeline
-    out_path = out_dir_with_qa_test_cases
-
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                    out_path = out_path,
+                                    out_path = env['out_path'],
                                     images_path = env['images_path'])
     repo = helpers.Repo(env['repo_path'])
     images_path = env['images_path']
