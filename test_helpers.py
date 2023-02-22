@@ -3,6 +3,7 @@ import lazytp as ltp
 
 import os
 import pytest
+import re
 import subprocess
 from pathlib import Path
 
@@ -194,18 +195,14 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     assert expected_substring in result
 
 
-@pytest.mark.skip(reason='WIP')
 def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline):
     env = environment_for_test_pipeline
+
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
                                     out_path = env['out_path'],
                                     images_path = env['images_path'])
-    repo = helpers.Repo(env['repo_path'])
-    images_path = env['images_path']
-    print('repo HEAD: ', repo.get_sha_of_branch('HEAD'))
-    print('qa project root: ', images_path.parent)
-    print('as camel case: ', helpers.camel_case(str(images_path.parent)))
 
-    print('content of out:', list(out_path.glob('*')))
-    print('RESULT: ', result)
-    assert False
+    expected_qa_project_name = helpers.camel_case(env['images_path'].parent.name)
+    expected_id = '004' # previous highest id was 003
+    all_correct_output_folders = env['out_path'].glob(f"{expected_id}*{expected_qa_project_name}")
+    assert len(list(all_correct_output_folders)) == 1
