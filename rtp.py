@@ -2,9 +2,10 @@
 
 import helpers
 
+import argparse
 import logging
 import subprocess
-from argparse import ArgumentParser
+import sys
 from pathlib import Path
 
 binary = '~/Code/pix4d-rag/build-fastmap-Release/bin/test_pipeline'
@@ -51,5 +52,40 @@ def lazy_test_pipeline(app_path: Path,
                          config_path = Path('./config.txt'),
                          images_path = images_path)
 
+
 if __name__ == '__main__':
-    pass
+    parser = argparse.ArgumentParser(
+        description =
+           """
+           lazy_tp, test_pipeline for lazy people.
+
+           This script calls test_pipeline, checks for a stale binary, writes
+           the results to an automatically generated output folder that tracks
+           version information of the binary.
+           """,
+        formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument(
+        '-x', '--test-pipeline',
+        help='Path to test_pipeline executable. Assumed to be somewhere inside the rag repo.'
+    )
+
+    parser.add_argument(
+        '-o', '--out-path',
+        help='Path to where the output should be stored. The script will add a new sub-directory.'
+    )
+
+    parser.add_argument(
+        '-i', '--images_path',
+        help='Path to the \'images\' directory. The parent folder name will be used to name the output sub-directory.'
+    )
+
+    args = parser.parse_args()
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(0)
+
+    lazy_test_pipeline(app_path = Path(args.test_pipeline),
+                       out_path = Path(args.out_path),
+                       images_path = Path(args.images_path))
