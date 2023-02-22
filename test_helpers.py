@@ -18,7 +18,7 @@ def subprocess_output(command: list[str]):
 def git(*args, repo: Path=None):
     command = ["git"]
     if repo is not None:
-        command += ["-C", repo]
+        command += ["-C", str(repo)]
     command.extend(args)
     return subprocess_output(command)
 
@@ -31,10 +31,11 @@ def tmp_dir_with_qa_test_cases(tmp_path):
     * 1234_001_project1_userDescription
     * 1234_003_project1_userDescription
     """
+    out_path = (tmp_path / 'out')
     for directory_name in ('1234_001_project1_userDescription',
                            '1234_003_project1_userDescription'):
-        (tmp_path / directory_name).mkdir()
-    yield tmp_path
+        (out_path / directory_name).mkdir(parents=True, exist_ok=True)
+    yield out_path
 
 
 @pytest.fixture
@@ -43,6 +44,7 @@ def tmp_repo(tmp_path):
     repo = (tmp_path / 'repo')
     repo.mkdir()
     git('init', repo)
+    git('commit', '--allow-empty', '-m', '"dummy commit"', repo=repo)
     return repo
 
 
