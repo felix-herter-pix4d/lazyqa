@@ -50,13 +50,18 @@ echo_call_program = "echo $0 $@"
 
 
 @pytest.fixture
-def repo_with_call_inspection_executable(tmp_repo, dummy_test_pipeline=echo_call_program):
+def repo_with_executable(tmp_repo):
     """Fixture that yields a repo with an executable."""
-    executable_path = tmp_repo / "app"
-    with open(executable_path, 'w') as f:
-        f.write(dummy_test_pipeline)
-    os.chmod(executable_path, 0o700) # owner may read, write, or execute
-    yield {'repo': tmp_repo, 'executable': executable_path}
+
+    def _impl(executable=echo_call_program):
+        """Inner function to enable injecting different executables into the fixture."""
+        executable_path = tmp_repo / "app"
+        with open(executable_path, 'w') as f:
+            f.write(executable)
+        os.chmod(executable_path, 0o700) # owner may read, write, or execute
+        return {'repo': tmp_repo, 'executable': executable_path}
+
+    yield _impl
 
 
 def insert_dummy_images(path: Path):
@@ -72,7 +77,7 @@ def insert_dummy_config(path: Path):
 
 
 @pytest.fixture
-def environment_for_test_pipeline(repo_with_call_inspection_executable):
+def environment_for_test_pipeline(repo_with_executable):
     """Fixture that yields a complete environment for test_pipeline.
 
     This comprises
@@ -82,6 +87,7 @@ def environment_for_test_pipeline(repo_with_call_inspection_executable):
      * `config_path` dummy path to a config file
      * `out_path`    dummy path to an output folder
     """
+    repo_with_call_inspection_executable = repo_with_executable(echo_call_program)
     repo_path = repo_with_call_inspection_executable['repo']
     app_path = repo_with_call_inspection_executable['executable']
     images_path = repo_path.parent / 'images'
@@ -175,3 +181,10 @@ def test_call_test_pipeline_executes_the_expected_command(environment_for_test_p
     expected_command = (f'{app_path} -f {config_path} -o {out_path} ' +
                          ' '.join(str(image_path) for image_path in images_path.glob('*')))
     assert command_triggered == expected_command
+
+
+def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
+    pass
+    # can we parameterize the environment? I would like to pass a different config content,
+    # or a different binary
+
