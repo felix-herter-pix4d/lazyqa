@@ -33,6 +33,14 @@ def test_pipeline(app_path: Path,
     command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
     return execute_command(command)
 
+
+def lazy_test_pipeline(app_path: Path, out_path: Path, images_path: Path):
+    return test_pipeline(app_path = app_path,
+                         out_path = out_path,
+                         config_path = Path('config.txt'),
+                         images_path = images_path)
+
+
 if __name__ == '__main__':
     binary_path = Path(binary).expanduser()
     repo = helpers.Repo(Path(binary_path))

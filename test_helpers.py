@@ -168,23 +168,26 @@ def test_qa_test_case_names_are_correct_when_description_given():
 
 #-----------------------------------------------------------------------test rtp
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
-    app_path = environment_for_test_pipeline['app_path']
-    images_path = environment_for_test_pipeline['images_path']
-    out_path = environment_for_test_pipeline['out_path']
-    config_path = environment_for_test_pipeline['config_path']
+    env = environment_for_test_pipeline
+    command_triggered = rtp.test_pipeline(app_path = env['app_path'],
+                                          out_path = env['out_path'],
+                                          config_path = env['config_path'],
+                                          images_path = env['images_path'])
 
-    command_triggered = rtp.test_pipeline(app_path=app_path,
-                                          out_path=out_path,
-                                          config_path=config_path,
-                                          images_path=images_path)
-
-    expected_command = (f'{app_path} -f {config_path} -o {out_path} ' +
-                         ' '.join(str(image_path) for image_path in images_path.glob('*')))
+    expected_command = (f"{env['app_path']} -f {env['config_path']} -o {env['out_path']} " +
+                         ' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
     assert command_triggered == expected_command
 
 
 def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
-    pass
-    # can we parameterize the environment? I would like to pass a different config content,
-    # or a different binary
+    env = environment_for_test_pipeline
+    os.chdir(env['config_path'].parent)
 
+    result = rtp.lazy_test_pipeline(app_path = env['app_path'],
+                                    out_path = env['out_path'],
+                                    images_path = env['images_path'])
+
+    expected_config_path = 'config.txt'
+    expected_command = (f"{env['app_path']} -f {expected_config_path} -o {env['out_path']} " +
+                         ' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
+    assert result == expected_command
