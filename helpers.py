@@ -90,6 +90,7 @@ class Repo():
 
 
 #----------------------------------------------------------------------QAProject
+#TODO: do we need this? What should it do?
 class QAProject():
     """Class that represents a QA project.
 
