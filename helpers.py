@@ -155,24 +155,24 @@ def test_case_name_regex():
     """Returns a regex matching the individual components of a test caste name.
 
     Usage:
-    >>> m = re.match(test_case_name_regex(), "1234567890_001_snowyHillside_increasedStepSizeTo42")
-    >>> m.group(1)  = '1234567890'
-    >>> m.group(2)  = '001'
+    >>> m = re.match(test_case_name_regex(), "001_1234567890_snowyHillside_increasedStepSizeTo42")
+    >>> m.group(1)  = '001'
+    >>> m.group(2)  = '1234567890'
     >>> m.group(3)  = 'snowyHillside'
     >>> m.group(4)  = 'increasedStepSizeTo42'
     """
-    sha1 = fr"[^\W_]+" # [^\W_]: alphanumeric without underscore
     _id = fr"\d+"
+    sha1 = fr"[^\W_]+" # [^\W_]: alphanumeric without underscore
     project_name = fr"[^\W_]+"              # [^\W_]: alphanumeric without underscore
     optional_user_description = fr"[^\W_]*" # [^\W_]: alphanumeric without underscore
-    return re.compile(fr"({sha1}){SEPARATOR}({_id}){SEPARATOR}({project_name}){SEPARATOR}?({optional_user_description})")
+    return re.compile(fr"({_id}){SEPARATOR}({sha1}){SEPARATOR}({project_name}){SEPARATOR}?({optional_user_description})")
 
 
 def parse_test_case_name(name: str):
     """Returns a dict of the components of the test case name."""
     m = test_case_name_regex().match(name)
-    return {"sha1" : m.group(1),
-            "id" : m.group(2),
+    return {"id" : m.group(1),
+            "sha1" : m.group(2),
             "dataset_name" : m.group(3),
             "optional_description" : m.group(4)}
 
@@ -182,8 +182,8 @@ def is_test_case_name(s: str):
     return bool(test_case_name_regex().match(s))
 
 
-def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):
-    result =  sha1 + SEPARATOR + _id + SEPARATOR + camel_case(project_name)
+def create_test_case_name(_id: str, sha1: str, project_name: str, optional_description: str = None):
+    result =  _id + SEPARATOR + sha1 + SEPARATOR + camel_case(project_name)
     if optional_description is not None:
         result += '_' + camel_case(optional_description)
     return result
@@ -199,7 +199,7 @@ def increment_id(_id: str):
 
 
 def find_highest_id(sha1: str, qa_project_root: Path):
-    project_names_matching_sha1 = (path.name for path in qa_project_root.glob(sha1 + "*") if is_test_case_name(path.name))
+    project_names_matching_sha1 = (path.name for path in qa_project_root.glob("*" + sha1 + "*") if is_test_case_name(path.name))
     ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
     zero_id = '0' * ID_LEN
     return zero_id if not ids else max(ids)

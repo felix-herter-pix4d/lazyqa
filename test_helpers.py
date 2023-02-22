@@ -28,12 +28,12 @@ def tmp_dir_with_qa_test_cases(tmp_path):
     """Fixture that yields a directory with some folders inside.
 
     Specifically there are folders
-    * 1234_001_project1_userDescription
-    * 1234_003_project1_userDescription
+    * 001_1234_project1_userDescription
+    * 003_1234_project1_userDescription
     """
     out_path = (tmp_path / 'out')
-    for directory_name in ('1234_001_project1_userDescription',
-                           '1234_003_project1_userDescription'):
+    for directory_name in ('001_1234_project1_userDescription',
+                           '003_1234_project1_userDescription'):
         (out_path / directory_name).mkdir(parents=True, exist_ok=True)
     yield out_path
 
@@ -155,8 +155,8 @@ def test_qa_test_case_names_are_correct_when_no_description_given():
     sha1 = '1234567890'
     _id = '001'
     project_name = 'snowy_Hillside'
-    test_case_name = helpers.create_test_case_name(sha1, _id, project_name)
-    assert test_case_name == '1234567890_001_snowyHillside'
+    test_case_name = helpers.create_test_case_name(_id, sha1, project_name)
+    assert test_case_name == '001_1234567890_snowyHillside'
 
 
 def test_qa_test_case_names_are_correct_when_description_given():
@@ -164,8 +164,8 @@ def test_qa_test_case_names_are_correct_when_description_given():
     _id = '001'
     project_name = 'snowy_Hillside'
     description = "increasedStepSizeTo42"
-    test_case_name = helpers.create_test_case_name(sha1, _id, project_name, description)
-    assert test_case_name == '1234567890_001_snowyHillside_increasedStepSizeTo42'
+    test_case_name = helpers.create_test_case_name(_id, sha1, project_name, description)
+    assert test_case_name == '001_1234567890_snowyHillside_increasedStepSizeTo42'
 
 
 #-----------------------------------------------------------------------test rtp
