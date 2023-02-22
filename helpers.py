@@ -198,15 +198,15 @@ def increment_id(_id: str):
     return '0' * (ID_LEN - len(next_id)) + next_id
 
 
-def find_highest_id(sha1: str, qa_project_root: Path):
-    project_names_matching_sha1 = (path.name for path in qa_project_root.glob("*" + sha1 + "*") if is_test_case_name(path.name))
-    ids = {parse_test_case_name(name)['id'] for name in project_names_matching_sha1}
+def find_highest_id(qa_project_root: Path):
+    project_names = (path.name for path in qa_project_root.glob("*") if is_test_case_name(path.name))
+    ids = {parse_test_case_name(name)['id'] for name in project_names}
     zero_id = '0' * ID_LEN
     return zero_id if not ids else max(ids)
 
 
-def get_next_id(sha1: str, qa_project_root: Path):
-    return increment_id(find_highest_id(sha1, qa_project_root))
+def get_next_id(qa_project_root: Path):
+    return increment_id(find_highest_id(qa_project_root))
 
 
 def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):

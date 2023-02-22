@@ -138,18 +138,9 @@ def test_qa_project_class_cannot_be_created_when_images_directory_contains_no_im
 
 
 #----------------------------------------------------------test specific helpers
-def test_get_next_id_returns_the_correct_id_for_existing_sha1(tmp_dir_with_qa_test_cases):
-    sha1 = '1234'
-    out_path = tmp_dir_with_qa_test_cases
-    next_id = helpers.get_next_id(sha1, out_path)
-    assert next_id == '004' # 003 is highest id for folders beginning with '1234'
+def test_get_next_id_returns_the_correct_id(tmp_dir_with_qa_test_cases):
+    assert helpers.get_next_id(tmp_dir_with_qa_test_cases) == '004' # highest existing id is '003'
 
-
-def test_get_next_id_returns_the_correct_id_new_sha1(tmp_dir_with_qa_test_cases):
-    sha1 = '1337'
-    out_path = tmp_dir_with_qa_test_cases
-    next_id = helpers.get_next_id(sha1, out_path)
-    assert next_id == '001' # no folders begin with `1337`
 
 def test_qa_test_case_names_are_correct_when_no_description_given():
     sha1 = '1234567890'
