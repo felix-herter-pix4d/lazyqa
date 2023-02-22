@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import rqa
+import helpers
 
 import logging
 import subprocess
@@ -35,7 +35,7 @@ def test_pipeline(app_path: Path,
 
 if __name__ == '__main__':
     binary_path = Path(binary).expanduser()
-    repo = rqa.Repo(Path(binary_path))
+    repo = helpers.Repo(Path(binary_path))
 
     if not out_path.exists():
         logging.info(f"output directory '{out_path}' not found, creating it")
