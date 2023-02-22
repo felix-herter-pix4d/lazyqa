@@ -24,14 +24,14 @@ def git(*args, repo: Path=None):
 
 
 @pytest.fixture
-def tmp_dir_with_qa_test_cases(tmp_path):
+def out_dir_with_qa_test_cases(tmp_path):
     """Fixture that yields a directory with some folders inside.
 
     Specifically there are folders
     * 001_1234_project1_userDescription
     * 003_1234_project1_userDescription
     """
-    out_path = (tmp_path / 'out')
+    out_path = (tmp_path / 'Output')
     for directory_name in ('001_1234_project1_userDescription',
                            '003_1234_project1_userDescription'):
         (out_path / directory_name).mkdir(parents=True, exist_ok=True)
@@ -138,8 +138,8 @@ def test_qa_project_class_cannot_be_created_when_images_directory_contains_no_im
 
 
 #----------------------------------------------------------test specific helpers
-def test_get_next_id_returns_the_correct_id(tmp_dir_with_qa_test_cases):
-    assert helpers.get_next_id(tmp_dir_with_qa_test_cases) == '004' # highest existing id is '003'
+def test_get_next_id_returns_the_correct_id(out_dir_with_qa_test_cases):
+    assert helpers.get_next_id(out_dir_with_qa_test_cases) == '004' # highest existing id is '003'
 
 
 def test_qa_test_case_names_are_correct_when_no_description_given():
@@ -173,9 +173,9 @@ def test_call_test_pipeline_executes_the_expected_command(environment_for_test_p
 
 
 def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
-                                               tmp_dir_with_qa_test_cases):
+                                               out_dir_with_qa_test_cases):
     env = environment_for_test_pipeline
-    out_path = tmp_dir_with_qa_test_cases
+    out_path = out_dir_with_qa_test_cases
     os.chdir(env['config_path'].parent)
 
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
@@ -188,13 +188,13 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
 
 @pytest.mark.skip(reason='WIP')
 def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline,
-                                                          tmp_dir_with_qa_test_cases):
+                                                          out_dir_with_qa_test_cases):
     #TODO: would be nice if the environment had a project folder with a project name
     #      and an images subfolder, as well as a clear output folder with some existing
     #      'previous results'. So tmp_dir_with_qa_test_cases may be merged into
     #      environment_for_test_pipeline
     env = environment_for_test_pipeline
-    out_path = tmp_dir_with_qa_test_cases
+    out_path = out_dir_with_qa_test_cases
 
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
                                     out_path = out_path,
