@@ -57,8 +57,11 @@ class Repo():
     def get_merge_base(self, commit1: str, commit2: str):
         return self._git("merge-base", commit1, commit2)
 
-    def get_sha_of_branch(self, branch: str):
-        return self._git("rev-parse", branch)
+    def get_sha_of_branch(self, branch: str, short: bool=False):
+        sha1 = self._git("rev-parse", branch)
+        if short:
+            sha1 = self.get_short_sha1(sha1)
+        return sha1
 
     def get_short_sha1(self, sha1: str):
         return self._git("rev-parse", "--short", sha1)
@@ -207,10 +210,3 @@ def find_highest_id(qa_project_root: Path):
 
 def get_next_id(qa_project_root: Path):
     return increment_id(find_highest_id(qa_project_root))
-
-
-def create_test_case_name(sha1: str, _id: str, project_name: str, optional_description: str = None):
-    result =  sha1 + SEPARATOR + _id + SEPARATOR + camel_case(project_name)
-    if optional_description is not None:
-        result += '_' + camel_case(optional_description)
-    return result

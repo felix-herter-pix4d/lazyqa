@@ -34,23 +34,22 @@ def test_pipeline(app_path: Path,
     return execute_command(command)
 
 
-def lazy_test_pipeline(app_path: Path, out_path: Path, images_path: Path):
+def lazy_test_pipeline(app_path: Path,
+                       out_path: Path,
+                       images_path: Path,
+                       optional_description: str = None):
+    # TODO: extract into function
+    _id = helpers.get_next_id(out_path)
+    sha1 = helpers.Repo(app_path).get_sha_of_branch('HEAD', short=True)
+    project_name = helpers.camel_case(images_path.parent.name)
+    out_subfolder_name = helpers.create_test_case_name(_id, sha1, project_name, optional_description)
+    out_subfolder_path = out_path / out_subfolder_name
+    out_subfolder_path.mkdir()
+
     return test_pipeline(app_path = app_path,
-                         out_path = out_path,
-                         config_path = Path('config.txt'),
+                         out_path = out_subfolder_path,
+                         config_path = Path('./config.txt'),
                          images_path = images_path)
 
-
 if __name__ == '__main__':
-    binary_path = Path(binary).expanduser()
-    repo = helpers.Repo(Path(binary_path))
-
-    if not out_path.exists():
-        logging.info(f"output directory '{out_path}' not found, creating it")
-        out_path.mkdir(parents=True)
-
-    #images = [str(image_path) for image_path in data_path.glob('*')]
-    #out_args = ['-o', str(out_path / '02_')]
-
-    #result = execute_command(' '.join([binary] + out_args + images))
-    #print("result is: ", result)
+    pass

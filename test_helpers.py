@@ -172,15 +172,39 @@ def test_call_test_pipeline_executes_the_expected_command(environment_for_test_p
     assert command_triggered == expected_command
 
 
-def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
+def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline,
+                                               tmp_dir_with_qa_test_cases):
     env = environment_for_test_pipeline
+    out_path = tmp_dir_with_qa_test_cases
     os.chdir(env['config_path'].parent)
 
     result = rtp.lazy_test_pipeline(app_path = env['app_path'],
-                                    out_path = env['out_path'],
+                                    out_path = out_path,
                                     images_path = env['images_path'])
 
-    expected_config_path = 'config.txt'
-    expected_command = (f"{env['app_path']} -f {expected_config_path} -o {env['out_path']} " +
-                         ' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
-    assert result == expected_command
+    expected_substring = '-f config.txt'
+    assert expected_substring in result
+
+
+@pytest.mark.skip(reason='WIP')
+def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline,
+                                                          tmp_dir_with_qa_test_cases):
+    #TODO: would be nice if the environment had a project folder with a project name
+    #      and an images subfolder, as well as a clear output folder with some existing
+    #      'previous results'. So tmp_dir_with_qa_test_cases may be merged into
+    #      environment_for_test_pipeline
+    env = environment_for_test_pipeline
+    out_path = tmp_dir_with_qa_test_cases
+
+    result = rtp.lazy_test_pipeline(app_path = env['app_path'],
+                                    out_path = out_path,
+                                    images_path = env['images_path'])
+    repo = helpers.Repo(env['repo_path'])
+    images_path = env['images_path']
+    print('repo HEAD: ', repo.get_sha_of_branch('HEAD'))
+    print('qa project root: ', images_path.parent)
+    print('as camel case: ', helpers.camel_case(str(images_path.parent)))
+
+    print('content of out:', list(out_path.glob('*')))
+    print('RESULT: ', result)
+    assert False
