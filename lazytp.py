@@ -32,7 +32,26 @@ def test_pipeline(app_path: Path,
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
     command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
+    command += f' | tee {str(out_path / "log.txt")}'
     return execute_command(command)
+
+
+def derive_stitched_result_name(test_case_name: str):
+    """Derived name has the form '<id>_<optionalDescription>_stitched.tiff'.'"""
+    parsed = helpers.parse_test_case_name(test_case_name)
+    components = [parsed['id']]
+    if parsed['optional_description'] is not None:
+        components += [parsed['optional_description']]
+    components += ['stitched.tiff']
+    return '_'.join(components)
+
+
+def rename_stitched_tiff(out_subfolder_path: str):
+    """Add test case id and user description to the too generic name 'stitched.tiff'."""
+    stitched_tiff_path = out_subfolder_path / 'stitched.tiff'
+    test_case_name = out_subfolder_path.name
+    if stitched_tiff_path.exists():
+        stitched_tiff_path.rename(out_subfolder_path / derive_stitched_result_name(test_case_name))
 
 
 def lazy_test_pipeline(app_path: Path,
@@ -43,15 +62,18 @@ def lazy_test_pipeline(app_path: Path,
     _id = helpers.get_next_id(out_path)
     sha1 = helpers.Repo(app_path).get_sha_of_branch('HEAD', short=True)
     project_name = helpers.camel_case(images_path.parent.name)
-    out_subfolder_name = helpers.create_test_case_name(_id, sha1, project_name, optional_description)
-    out_subfolder_path = out_path / out_subfolder_name
+    test_case_name = helpers.create_test_case_name(_id, sha1, project_name, optional_description)
+    out_subfolder_path = out_path / test_case_name
     out_subfolder_path.mkdir()
 
-    return test_pipeline(app_path = app_path,
-                         out_path = out_subfolder_path,
-                         config_path = Path('./config.txt'),
-                         images_path = images_path)
+    output = test_pipeline(app_path = app_path,
+                           out_path = out_subfolder_path,
+                           config_path = Path('./config.txt'),
+                           images_path = images_path)
 
+    rename_stitched_tiff(out_subfolder_path)
+
+    return output # for testing purposes
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -80,6 +102,11 @@ if __name__ == '__main__':
         help='Path to the \'images\' directory. The parent folder name will be used to name the output sub-directory.'
     )
 
+    parser.add_argument(
+        '-d', '--description',
+        help='Optional description. It will be appended to the output folder name.'
+    )
+
     args = parser.parse_args()
 
     if len(sys.argv) < 2:
@@ -88,4 +115,5 @@ if __name__ == '__main__':
 
     lazy_test_pipeline(app_path = Path(args.test_pipeline),
                        out_path = Path(args.out_path),
-                       images_path = Path(args.images_path))
+                       images_path = Path(args.images_path),
+                       optional_description=args.description)

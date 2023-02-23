@@ -223,3 +223,21 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
     all_correct_output_folders = env['out_path'].glob(
         f"{expected_id}*{expected_qa_project_name}*{expected_description}")
     assert len(list(all_correct_output_folders)) == 1
+
+
+def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_test_pipeline):
+    env = environment_for_test_pipeline
+    collect_current_qa_test_cases = lambda : set(env['out_path'].glob('*'))
+    previous_qa_test_cases = collect_current_qa_test_cases()
+
+    ltp.lazy_test_pipeline(app_path = env['app_path'],
+                           out_path = env['out_path'],
+                           images_path = env['images_path'])
+
+    new_qa_test_case_path = next(iter(collect_current_qa_test_cases() - previous_qa_test_cases))
+    assert 'log.txt' in {content.name for content in new_qa_test_case_path.glob('*')}
+
+
+def test_stitched_result_name_contains_id_and_description():
+    result_name = ltp.derive_stitched_result_name('015_1234567890_snowyHillside_increasedStepSizeTo42')
+    assert result_name == '015_increasedStepSizeTo42_stitched.tiff'
