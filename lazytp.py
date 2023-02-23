@@ -13,15 +13,18 @@ out_path = Path('/home/fherter/Tickets/cv412_GpuMspFullBlending/Output')
 #datapath = r'../Data/Hay\ Beach\ Dunes\ Test\ 050818_inputs' # with spaces
 data_path = Path('../Data/Hay_BeachDunesTest050818_inputs')
 
-def execute_command(command: list[str]):
-    subprocess_result = subprocess.run(command, capture_output=True, shell=True)
-    msg = subprocess_result.stdout
-    msg = msg.decode('utf-8').strip()
-    try:
-        subprocess_result.check_returncode()
-        return msg
-    except subprocess.CalledProcessError:
-        raise RuntimeError(f"failed executing binary '{command.split()[0]} ...':\n'{msg}'")
+def execute_command(command: list[str], live_output: bool=False):
+    process = subprocess.Popen(command,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+                               encoding='utf-8',
+                               shell=True)
+    output_lines = []
+    for line in iter(process.stdout.readline, ''):
+        if live_output:
+            print(line, end='')
+        output_lines.append(line.strip())
+    return '\n'.join(output_lines)
 
 
 def test_pipeline(app_path: Path,
