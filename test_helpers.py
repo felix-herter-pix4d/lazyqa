@@ -195,14 +195,31 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     assert expected_substring in result
 
 
-def test_lazy_test_pipeline_creates_correct_output_folder(environment_for_test_pipeline):
+def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(environment_for_test_pipeline):
     env = environment_for_test_pipeline
 
-    result = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                    out_path = env['out_path'],
-                                    images_path = env['images_path'])
+    ltp.lazy_test_pipeline(app_path = env['app_path'],
+                           out_path = env['out_path'],
+                           images_path = env['images_path'])
 
     expected_qa_project_name = helpers.camel_case(env['images_path'].parent.name)
     expected_id = '004' # previous highest id was 003
     all_correct_output_folders = env['out_path'].glob(f"{expected_id}*{expected_qa_project_name}")
+    assert len(list(all_correct_output_folders)) == 1
+
+
+def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_given(environment_for_test_pipeline):
+    env = environment_for_test_pipeline
+    description = "this is a test case"
+
+    ltp.lazy_test_pipeline(app_path = env['app_path'],
+                           out_path = env['out_path'],
+                           optional_description = description,
+                           images_path = env['images_path'])
+
+    expected_qa_project_name = helpers.camel_case(env['images_path'].parent.name)
+    expected_description = helpers.camel_case(description)
+    expected_id = '004' # previous highest id was 003
+    all_correct_output_folders = env['out_path'].glob(
+        f"{expected_id}*{expected_qa_project_name}*{expected_description}")
     assert len(list(all_correct_output_folders)) == 1
