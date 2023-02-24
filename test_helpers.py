@@ -122,6 +122,10 @@ def test_camel_case_removes_all_forbidden_symbols():
     assert helpers.camel_case(non_camel_case_string) == camel_case_string
 
 
+def test_that_path_into_git_repo_is_correctly_detected(repo_with_executable):
+    assert helpers.is_part_of_git_repo(repo_with_executable()['executable'])
+
+
 #----------------------------------------------------------------------test Repo
 def test_repo_class_can_be_constructed_from_repo_path(repo_dir):
     helpers.Repo(repo_dir)

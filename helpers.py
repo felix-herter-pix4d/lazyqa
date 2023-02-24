@@ -28,6 +28,8 @@ def git(*args, repo: Path=None):
 
 def is_part_of_git_repo(path: Path):
     """Check if path leads to a directory that is inside/part of a git repo."""
+    if not path.is_dir():
+        path = path.parent
     try:
         git("-C", path, "rev-parse", "--is-inside-work-tree")
         return True
