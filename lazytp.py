@@ -2,9 +2,13 @@
 
 import helpers
 
+
 import argparse
+import datetime
 import logging
+import os
 import subprocess
+import time
 import sys
 from pathlib import Path
 
@@ -55,6 +59,35 @@ def rename_stitched_tiff(out_subfolder_path: str):
     test_case_name = out_subfolder_path.name
     if stitched_tiff_path.exists():
         stitched_tiff_path.rename(out_subfolder_path / derive_stitched_result_name(test_case_name))
+
+
+class colors:
+    red = '\033[91m'
+    orange = '\033[93m'
+    normal = '\033[0m'
+
+def check_executable(app_path: str):
+    # wrong path to binary?
+    if not app_path.exists():
+        print(f'{colors.red}',
+              f'binary {app_path} not found',
+              f'{colors.normal}')
+        exit(-1)
+
+    # binary not part of git repo?
+    if not helpers.is_part_of_git_repo(app_path):
+        print(f'{colors.red}',
+              f'binary {app_path} must be inside the repo',
+              f'{colors.normal}')
+        exit(-1)
+
+    # stale binary?
+    seconds_since_last_modification =  int(time.time() - os.path.getmtime(app_path))
+    if seconds_since_last_modification > 60:
+        print(f'{colors.orange}age:',
+              f'{datetime.timedelta(seconds=seconds_since_last_modification)}',
+              f'{colors.normal}')
+        input('(press any key to continue)')
 
 
 def lazy_test_pipeline(app_path: Path,
@@ -115,6 +148,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         parser.print_help()
         sys.exit(0)
+
+    check_executable(Path(args.test_pipeline))
 
     lazy_test_pipeline(app_path = Path(args.test_pipeline),
                        out_path = Path(args.out_path),
