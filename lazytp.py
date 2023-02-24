@@ -40,7 +40,8 @@ def test_pipeline(app_path: Path,
     command += ' -o ' + str(out_path)
     command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
     command += f' | tee {str(out_path / "log.txt")}'
-    return execute_command(command)
+    print('COMMAND:\n', command)
+    return execute_command(command, live_output=True)
 
 
 def derive_stitched_result_name(test_case_name: str):
@@ -147,7 +148,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         parser.print_help()
-        sys.exit(0)
+        sys.exit(-1)
 
     check_executable(Path(args.test_pipeline))
 
