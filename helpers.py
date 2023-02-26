@@ -14,7 +14,11 @@ def camel_case(s: str):
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)
-    result.check_returncode()
+    try:
+        result.check_returncode()
+    except subprocess.CalledProcessError as err:
+        print(f"subprocess: '{command}' raised {err}\nstdout: {result.stderr.decode('utf-8').strip()}")
+        raise err
     return result.stdout.decode('utf-8').strip()
 
 
