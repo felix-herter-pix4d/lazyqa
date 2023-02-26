@@ -96,12 +96,18 @@ def lazy_test_pipeline(app_path: Path,
                        images_path: Path,
                        optional_description: str = None):
     # TODO: extract into function
+    repo = helpers.Repo(app_path)
     _id = helpers.get_next_id(out_path)
-    sha1 = helpers.Repo(app_path).get_sha_of_branch('HEAD', short=True)
+    sha1 = repo.get_sha_of_branch('HEAD', short=True)
     project_name = helpers.camel_case(images_path.parent.name)
     test_case_name = helpers.create_test_case_name(_id, sha1, project_name, optional_description)
     out_subfolder_path = out_path / test_case_name
     out_subfolder_path.mkdir()
+
+    patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    print(patch)
+    with open(out_subfolder_path / 'changesFromMainBranch.patch', 'w') as patch_file:
+        patch_file.write(patch)
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_subfolder_path,

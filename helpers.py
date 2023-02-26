@@ -84,7 +84,7 @@ class Repo():
         raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
 
     def get_patch(self, _from: str, to: str='HEAD'):
-        return self._git(f'format-patch {_from} {to} --stdout')
+        return self._git(f'format-patch {_from}..{to} --stdout')
 
 #----------------------------------------------------------------------QAProject
 #TODO: do we need this? What should it do?
