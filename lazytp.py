@@ -104,10 +104,16 @@ def lazy_test_pipeline(app_path: Path,
     out_subfolder_path = out_path / test_case_name
     out_subfolder_path.mkdir()
 
-    patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
-    print(patch)
-    with open(out_subfolder_path / 'changesFromMainBranch.patch', 'w') as patch_file:
-        patch_file.write(patch)
+    # add patch to output containing changes all the way from last commit on main branch
+    patch_from_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    print(patch_from_main_branch)
+    with open(out_subfolder_path / 'changesStartingFromMainBranch.patch', 'w') as patch_file:
+        patch_file.write(patch_from_main_branch)
+
+    # add patch to output containing the last changes
+    last_patch = repo.get_untracked_changes()
+    with open(out_subfolder_path / 'changesNotTracked.patch', 'w') as patch_file:
+        patch_file.write(last_patch)
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_subfolder_path,
@@ -117,6 +123,7 @@ def lazy_test_pipeline(app_path: Path,
     rename_stitched_tiff(out_subfolder_path)
 
     return output # for testing purposes
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

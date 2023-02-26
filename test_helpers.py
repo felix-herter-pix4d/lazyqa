@@ -21,7 +21,7 @@ def git(*args, repo: Path=None):
     if repo is not None:
         command += ["-C", str(repo)]
     command.extend(args)
-    return subprocess_output(command)
+    return helpers.subprocess_output(command)
 
 
 @pytest.fixture
@@ -62,6 +62,8 @@ def repo_with_executable(repo_dir):
         with open(executable_path, 'w') as f:
             f.write(executable)
         os.chmod(executable_path, 0o700) # owner may read, write, or execute
+        git('add', '.', repo=repo)
+        git('commit', '-m', '"added executable"', repo=repo)
         return {'repo': repo_dir, 'executable': executable_path}
 
     yield _impl
@@ -70,9 +72,7 @@ def repo_with_executable(repo_dir):
 @pytest.fixture
 def repo_with_dev_branch(repo_dir, repo_with_executable):
     git('checkout', '-b', 'dev_branch', repo=repo_dir)
-    repo_dir = repo_with_executable(repo_dir)['repo']
-    git('add', '.', repo=repo_dir)
-    git('commit', '-m', '"added executable"', repo=repo_dir)
+    repo_dir = repo_with_executable(repo_dir)['repo'] # adds a commit to repo 'repo_dir'
     return repo_dir
 
 
@@ -111,7 +111,7 @@ def environment_for_test_pipeline(repo_with_executable,
      * `config_path` dummy path to a config file
      * `out_path`    dummy path to an output folder
     """
-    repo_with_call_inspection_executable = repo_with_executable(echo_call_program)
+    repo_with_call_inspection_executable = repo_with_executable(executable=echo_call_program)
     repo_path = repo_with_call_inspection_executable['repo']
     app_path = repo_with_call_inspection_executable['executable']
     images_path = qa_project_with_images['images_path']
@@ -148,7 +148,7 @@ def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
 def test_repo_class_retrieves_patch(repo_with_dev_branch):
     repo = helpers.Repo(repo_with_dev_branch)
     patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
-    expected_content = ( '---\n'
+    expected_content = ('---\n'
                         ' app | 1 +\n'
                         ' 1 file changed, 1 insertion(+)\n'
                         ' create mode 100755 app\n\n'
@@ -161,6 +161,30 @@ def test_repo_class_retrieves_patch(repo_with_dev_branch):
                         '+echo $0 $@\n'
                         '\\ No newline at end of file\n')
     assert expected_content in patch
+
+
+def test_repo_class_untracked_changes_returns_correct_patch_when_there_are_changes(repo_with_executable):
+    repo_and_executable = repo_with_executable()
+    with open(repo_and_executable['executable'], 'a') as file:
+        file.write("untracked content")
+    repo = helpers.Repo(repo_and_executable['repo'])
+
+    patch = repo.get_untracked_changes()
+
+    expected_content = ('--- a/app\n'
+                        '+++ b/app\n'
+                        '@@ -1 +1 @@\n'
+                        '-echo $0 $@\n'
+                        '\\ No newline at end of file\n'
+                        '+echo $0 $@untracked content\n'
+                        '\\ No newline at end of file')
+    assert expected_content in patch
+
+
+def test_repo_class_untracked_changes_returns_empty_patch_when_there_are_no_changes(repo_dir):
+    repo = helpers.Repo(repo_dir)
+    patch = repo.get_untracked_changes()
+    assert patch == ''
 
 #-----------------------------------------------------------------test_QAProject
 def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(environment_for_test_pipeline):
@@ -253,7 +277,6 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
     all_correct_output_folders = env['out_path'].glob(
         f"{expected_id}*{expected_qa_project_name}*{expected_description}")
     assert len(list(all_correct_output_folders)) == 1
-
 
 def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_test_pipeline):
     env = environment_for_test_pipeline

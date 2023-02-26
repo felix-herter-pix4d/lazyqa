@@ -86,6 +86,17 @@ class Repo():
     def get_patch(self, _from: str, to: str='HEAD'):
         return self._git(f'format-patch {_from}..{to} --stdout')
 
+    def get_untracked_changes(self):
+        """Return a patch of the untracked changes.
+
+        If new files should be included in the patch, as well, this function
+        needs to be adjusted.
+        """
+        patch = self._git('diff')
+        return patch
+
+
+
 #----------------------------------------------------------------------QAProject
 #TODO: do we need this? What should it do?
 class QAProject():
