@@ -148,8 +148,7 @@ def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
 def test_repo_class_retrieves_patch(repo_with_dev_branch):
     repo = helpers.Repo(repo_with_dev_branch)
     patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
-    expected_content = ('Subject: [PATCH 1/2] "added executable"\n\n'
-                        '---\n'
+    expected_content = ( '---\n'
                         ' app | 1 +\n'
                         ' 1 file changed, 1 insertion(+)\n'
                         ' create mode 100755 app\n\n'
