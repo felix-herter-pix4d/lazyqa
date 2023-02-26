@@ -70,16 +70,14 @@ class Repo():
 
     def guess_main_branch(self):
         """Guess if 'master' or 'main' is used as main development branch."""
-        # We did not use `git ls-remote --heads origin ...` to avoid fetching the repo (slow)
-        try:
-            self._git("show-branch", "origin/master")
-            return "master"
-        except subprocess.CalledProcessError:
+        # `git ls-remote --heads origin ...` would fetch the repo, which takes too long
+        for guess in ('origin/master', 'origin/main', 'master', 'main'):
             try:
-                self._git("show-branch", "origin/main")
-                return "main"
+                self._git('show-branch', f'{guess}')
+                return f'{guess}'
             except subprocess.CalledProcessError:
-                raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
+                pass
+        raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
 
     def is_ancestor(self, commit1: str, commit2: str):
         return subprocess_check(["git", "-C", f"{self.repo}", "merge-base", "--is-ancestor", commit1, commit2])
