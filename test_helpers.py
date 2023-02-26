@@ -56,8 +56,8 @@ echo_call_program = "echo $0 $@"
 def repo_with_executable(repo_dir):
     """Fixture that yields a repo with an executable."""
 
-    def _impl(executable=echo_call_program):
-        """Inner function to enable injecting different executables into the fixture."""
+    def _impl(repo=repo_dir, executable=echo_call_program):
+        """Inner function to enable injecting different repos or executables."""
         executable_path = repo_dir / "app"
         with open(executable_path, 'w') as f:
             f.write(executable)
@@ -65,6 +65,15 @@ def repo_with_executable(repo_dir):
         return {'repo': repo_dir, 'executable': executable_path}
 
     yield _impl
+
+
+@pytest.fixture
+def repo_with_dev_branch(repo_dir, repo_with_executable):
+    git('checkout', '-b', 'dev_branch', repo=repo_dir)
+    repo_dir = repo_with_executable(repo_dir)['repo']
+    git('add', '.', repo=repo_dir)
+    git('commit', '-m', '"added executable"', repo=repo_dir)
+    return repo_dir
 
 
 def insert_dummy_images(path: Path):
@@ -135,6 +144,24 @@ def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
     with pytest.raises(helpers.Repo.NotARepoException):
         helpers.Repo(tmp_path)
 
+
+def test_repo_class_retrieves_patch(repo_with_dev_branch):
+    repo = helpers.Repo(repo_with_dev_branch)
+    patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    expected_content = ('Subject: [PATCH 1/2] "added executable"\n\n'
+                        '---\n'
+                        ' app | 1 +\n'
+                        ' 1 file changed, 1 insertion(+)\n'
+                        ' create mode 100755 app\n\n'
+                        'diff --git a/app b/app\n'
+                        'new file mode 100755\n'
+                        'index 0000000..827a748\n'
+                        '--- /dev/null\n'
+                        '+++ b/app\n'
+                        '@@ -0,0 +1 @@\n'
+                        '+echo $0 $@\n'
+                        '\\ No newline at end of file\n')
+    assert expected_content in patch
 
 #-----------------------------------------------------------------test_QAProject
 def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(environment_for_test_pipeline):

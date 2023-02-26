@@ -82,6 +82,10 @@ class Repo():
     def is_ancestor(self, commit1: str, commit2: str):
         return subprocess_check(["git", "-C", f"{self.repo}", "merge-base", "--is-ancestor", commit1, commit2])
 
+    def get_patch(self, _from: str, to: str='HEAD'):
+        return self._git('format-patch', f'{_from}', f'{to}', '--stdout')
+
+
     def commits_from_to(self, commit1: str, commit2: str, *args):
         """Retrieve sequence of commits from commit1 (exclusive) to commit2 (inclusive)."""
         assert(self.is_ancestor(commit1, commit2))
