@@ -75,6 +75,13 @@ def check_executable(app_path: str):
               f'{colors.normal}')
         exit(-1)
 
+    # binary not executable?
+    if not os.access(app_path, os.X_OK):
+        print(f'{colors.red}',
+              f'binary {app_path} is not executable',
+              f'{colors.normal}')
+        exit(-1)
+
     # binary not part of git repo?
     if not helpers.is_part_of_git_repo(app_path):
         print(f'{colors.red}',
