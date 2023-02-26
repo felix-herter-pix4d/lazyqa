@@ -57,45 +57,34 @@ class Repo():
     def path(self):
         return self.repo
 
-    def _git(self, *args):
-        return git(*args, repo=self.repo)
+    def _git(self, command: str):
+        return git(*command.split(), repo=self.repo)
 
     def get_merge_base(self, commit1: str, commit2: str):
-        return self._git("merge-base", commit1, commit2)
+        return self._git(f'merge-base {commit1} {commit2}')
 
     def get_sha_of_branch(self, branch: str, short: bool=False):
-        sha1 = self._git("rev-parse", branch)
+        sha1 = self._git(f'rev-parse {branch}')
         if short:
             sha1 = self.get_short_sha1(sha1)
         return sha1
 
     def get_short_sha1(self, sha1: str):
-        return self._git("rev-parse", "--short", sha1)
+        return self._git(f'rev-parse --short {sha1}')
 
     def guess_main_branch(self):
         """Guess if 'master' or 'main' is used as main development branch."""
         # `git ls-remote --heads origin ...` would fetch the repo, which takes too long
         for guess in ('origin/master', 'origin/main', 'master', 'main'):
             try:
-                self._git('show-branch', f'{guess}')
+                self._git(f'show-branch {guess}')
                 return f'{guess}'
             except subprocess.CalledProcessError:
                 pass
         raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
 
-    def is_ancestor(self, commit1: str, commit2: str):
-        return subprocess_check(["git", "-C", f"{self.repo}", "merge-base", "--is-ancestor", commit1, commit2])
-
     def get_patch(self, _from: str, to: str='HEAD'):
-        return self._git('format-patch', f'{_from}', f'{to}', '--stdout')
-
-
-    def commits_from_to(self, commit1: str, commit2: str, *args):
-        """Retrieve sequence of commits from commit1 (exclusive) to commit2 (inclusive)."""
-        assert(self.is_ancestor(commit1, commit2))
-        command =  ("--format=format:%H", f"{commit1}..{commit2}")
-        return self._git("log", *args, *command).split()
-
+        return self._git(f'format-patch {_from} {to} --stdout')
 
 #----------------------------------------------------------------------QAProject
 #TODO: do we need this? What should it do?
