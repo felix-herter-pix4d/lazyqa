@@ -67,7 +67,7 @@ class colors:
     orange = '\033[93m'
     normal = '\033[0m'
 
-def check_executable(app_path: str):
+def check_executable(app_path: str, prompt_user_confirmation:bool = True):
     # wrong path to binary?
     if not app_path.exists():
         print(f'{colors.red}',
@@ -90,12 +90,13 @@ def check_executable(app_path: str):
         exit(-1)
 
     # stale binary?
-    seconds_since_last_modification =  int(time.time() - os.path.getmtime(app_path))
-    if seconds_since_last_modification > 60:
-        print(f'{colors.orange}age:',
-              f'{datetime.timedelta(seconds=seconds_since_last_modification)}',
-              f'{colors.normal}')
-        input('(press any key to continue)')
+    if prompt_user_confirmation:
+        seconds_since_last_modification =  int(time.time() - os.path.getmtime(app_path))
+        if seconds_since_last_modification > 60:
+            print(f'{colors.orange}age:',
+                  f'{datetime.timedelta(seconds=seconds_since_last_modification)}',
+                  f'{colors.normal}')
+            input('(press any key to continue)')
 
 
 def lazy_test_pipeline(app_path: Path,
@@ -164,13 +165,15 @@ if __name__ == '__main__':
         help='Optional description. It will be appended to the output folder name.'
     )
 
+    parser.add_argument('--no-confirmation', action='store_true')
+
     args = parser.parse_args()
 
     if len(sys.argv) < 2:
         parser.print_help()
         sys.exit(-1)
 
-    check_executable(Path(args.test_pipeline))
+    check_executable(Path(args.test_pipeline), prompt_user_confirmation=not args.no_confirmation)
 
     lazy_test_pipeline(app_path = Path(args.test_pipeline),
                        out_path = Path(args.out_path),
