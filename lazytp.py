@@ -43,7 +43,7 @@ def test_pipeline(app_path: Path,
 def derive_stitched_result_name(test_case_name: str):
     """Derived name has the form '<id>_<optionalDescription>_stitched.tiff'.'"""
     parsed = helpers.parse_test_case_name(test_case_name)
-    components = [parsed['id']]
+    components = [parsed['id'], parsed['dataset_name']]
     if parsed['optional_description'] is not None:
         components += [parsed['optional_description']]
     components += ['stitched.tiff']
@@ -96,6 +96,10 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
 
 
 def get_lazytp_test_case_name(repo: helpers.Repo, out_path: Path, images_path: Path, optional_description: str=None):
+    """Use as id one more than the largest qa test case id we find in the out_path.
+
+    If all test cases were generated with lazytp this implies that they all have increasing ids.
+    """
     _id = helpers.get_next_id(out_path)
     sha1 = repo.get_sha_of_branch('HEAD', short=True)
     project_name = helpers.camel_case(images_path.parent.name)
@@ -114,15 +118,16 @@ def lazy_test_pipeline(app_path: Path,
     out_subfolder_path.mkdir()
 
     # add patch to output containing changes all the way from last commit on main branch
-    patch_from_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
-    print(patch_from_main_branch)
-    with open(out_subfolder_path / 'changesStartingFromMainBranch.patch', 'w') as patch_file:
-        patch_file.write(patch_from_main_branch)
+    patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    if patch_not_on_main_branch:
+        with open(out_subfolder_path / 'changesNotOnMainBranch.patch', 'w') as patch_file:
+            patch_file.write(patch_not_on_main_branch)
 
     # add patch to output containing the last changes
-    last_patch = repo.get_untracked_changes()
-    with open(out_subfolder_path / 'changesNotTracked.patch', 'w') as patch_file:
-        patch_file.write(last_patch)
+    untracked_patch = repo.get_untracked_changes()
+    if untracked_patch:
+        with open(out_subfolder_path / 'untrackedChanges.patch', 'w') as patch_file:
+            patch_file.write(untracked_patch)
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_subfolder_path,

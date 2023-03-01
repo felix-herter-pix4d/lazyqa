@@ -293,4 +293,4 @@ def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_te
 
 def test_stitched_result_name_contains_id_and_description():
     result_name = ltp.derive_stitched_result_name('015_1234567890_snowyHillside_increasedStepSizeTo42')
-    assert result_name == '015_increasedStepSizeTo42_stitched.tiff'
+    assert result_name == '015_snowyHillside_increasedStepSizeTo42_stitched.tiff'
