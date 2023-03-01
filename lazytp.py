@@ -5,7 +5,6 @@ import helpers
 
 import argparse
 import datetime
-import logging
 import os
 import subprocess
 import time
