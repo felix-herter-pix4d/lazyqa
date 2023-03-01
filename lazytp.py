@@ -12,10 +12,6 @@ import time
 import sys
 from pathlib import Path
 
-binary = '~/Code/pix4d-rag/build-fastmap-Release/bin/test_pipeline'
-out_path = Path('/home/fherter/Tickets/cv412_GpuMspFullBlending/Output')
-#datapath = r'../Data/Hay\ Beach\ Dunes\ Test\ 050818_inputs' # with spaces
-data_path = Path('../Data/Hay_BeachDunesTest050818_inputs')
 
 def execute_command(command: list[str], live_output: bool=False):
     process = subprocess.Popen(command,
@@ -99,17 +95,22 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
             input('(press any key to continue)')
 
 
+def get_lazytp_test_case_name(repo: helpers.Repo, out_path: Path, images_path: Path, optional_description: str=None):
+    _id = helpers.get_next_id(out_path)
+    sha1 = repo.get_sha_of_branch('HEAD', short=True)
+    project_name = helpers.camel_case(images_path.parent.name)
+    return helpers.create_test_case_name(_id, sha1, project_name, optional_description)
+
+
 def lazy_test_pipeline(app_path: Path,
                        out_path: Path,
                        images_path: Path,
                        optional_description: str = None):
-    # TODO: extract into function
     repo = helpers.Repo(app_path)
-    _id = helpers.get_next_id(out_path)
-    sha1 = repo.get_sha_of_branch('HEAD', short=True)
-    project_name = helpers.camel_case(images_path.parent.name)
-    test_case_name = helpers.create_test_case_name(_id, sha1, project_name, optional_description)
-    out_subfolder_path = out_path / test_case_name
+    out_subfolder_path = out_path / get_lazytp_test_case_name(repo=repo,
+                                                              out_path=out_path,
+                                                              images_path=images_path,
+                                                              optional_description=optional_description)
     out_subfolder_path.mkdir()
 
     # add patch to output containing changes all the way from last commit on main branch
