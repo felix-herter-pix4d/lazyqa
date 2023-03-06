@@ -92,7 +92,7 @@ def qa_project_with_images(tmp_path):
 
 
 def insert_dummy_config(path: Path):
-    config_path = path / 'config.txt'
+    config_path = path / 'config.ini'
     with open(config_path, 'w') as f:
         f.write("I'm a dummy config file.")
     return config_path
@@ -245,7 +245,7 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
                                     out_path = env['out_path'],
                                     images_path = env['images_path'])
 
-    expected_substring = '-f config.txt'
+    expected_substring = '-f config.ini'
     assert expected_substring in result
 
 

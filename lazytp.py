@@ -130,7 +130,7 @@ def lazy_test_pipeline(app_path: Path,
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_subfolder_path,
-                           config_path = Path('./config.txt'),
+                           config_path = Path('./config.ini'),
                            images_path = images_path)
 
     rename_stitched_tiff(out_subfolder_path)
