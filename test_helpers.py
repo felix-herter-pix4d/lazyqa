@@ -225,6 +225,18 @@ def test_qa_test_case_names_are_correct_when_description_given():
 
 
 #-----------------------------------------------------------------------test ltp
+def test_execute_command_copies_stdout_to_out_path(tmpdir):
+    content = 'hello world!'
+    command = [f'echo {content}']
+    out_file = tmpdir / "output.txt"
+
+    ltp.execute_command(command, out_file=out_file)
+
+    stored_content = None
+    with open(out_file) as f:
+        stored_content = f.read().strip()
+    assert stored_content  == content
+
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
     env = environment_for_test_pipeline
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
@@ -277,6 +289,7 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
     all_correct_output_folders = env['out_path'].glob(
         f"{expected_id}*{expected_qa_project_name}*{expected_description}")
     assert len(list(all_correct_output_folders)) == 1
+
 
 def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_test_pipeline):
     env = environment_for_test_pipeline
