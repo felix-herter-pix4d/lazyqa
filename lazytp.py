@@ -70,6 +70,13 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
               f'{colors.normal}')
         exit(-1)
 
+    # binary actually a directory?
+    if app_path.is_dir():
+        print(f'{colors.red}',
+              f'binary {app_path} is actually a directory',
+              f'{colors.normal}')
+        exit(-1)
+
     # binary not executable?
     if not os.access(app_path, os.X_OK):
         print(f'{colors.red}',
