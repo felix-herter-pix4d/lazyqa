@@ -6,6 +6,7 @@ import helpers
 import argparse
 import datetime
 import os
+import shutil
 import subprocess
 import time
 import sys
@@ -131,8 +132,14 @@ def lazy_test_pipeline(app_path: Path,
                                                          optional_description=optional_description)
     out_path.mkdir()
 
+    # create enriched config
     if config_path is None:
         config_path = Path('.') / 'config.ini'
+    if not config_path.exists():
+        raise RuntimeError(f'Config expected at {config_path.absolute()} but not found.')
+
+    path_of_enriched_config = out_path / 'config.ini'
+    shutil.copy(config_path, path_of_enriched_config)
 
     # add patch to output containing changes all the way from last commit on main branch
     patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
@@ -148,7 +155,7 @@ def lazy_test_pipeline(app_path: Path,
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,
-                           config_path = config_path,
+                           config_path = path_of_enriched_config,
                            images_path = images_path)
 
     rename_stitched_tiff(out_path)
