@@ -254,7 +254,7 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     os.chdir(env['config_path'].parent)
 
     result = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                    out_path = env['out_path'],
+                                    out_root_path = env['out_path'],
                                     images_path = env['images_path'])
 
     expected_substring = '-f config.ini'
@@ -265,7 +265,7 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is
     env = environment_for_test_pipeline
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],
-                           out_path = env['out_path'],
+                           out_root_path = env['out_path'],
                            images_path = env['images_path'])
 
     expected_qa_project_name = helpers.camel_case(env['images_path'].parent.name)
@@ -279,7 +279,7 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
     description = "this is a test case"
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],
-                           out_path = env['out_path'],
+                           out_root_path = env['out_path'],
                            optional_description = description,
                            images_path = env['images_path'])
 
@@ -297,7 +297,7 @@ def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_te
     previous_qa_test_cases = collect_current_qa_test_cases()
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],
-                           out_path = env['out_path'],
+                           out_root_path = env['out_path'],
                            images_path = env['images_path'])
 
     new_qa_test_case_path = next(iter(collect_current_qa_test_cases() - previous_qa_test_cases))
