@@ -122,13 +122,17 @@ def get_lazytp_test_case_name(repo: helpers.Repo, out_path: Path, images_path: P
 def lazy_test_pipeline(app_path: Path,
                        out_root_path: Path,
                        images_path: Path,
-                       optional_description: str = None):
+                       optional_description: str = None,
+                       config_path: Path = None):
     repo = helpers.Repo(app_path)
     out_path = out_root_path / get_lazytp_test_case_name(repo=repo,
                                                          out_path=out_root_path,
                                                          images_path=images_path,
                                                          optional_description=optional_description)
     out_path.mkdir()
+
+    if config_path is None:
+        config_path = Path('.') / 'config.ini'
 
     # add patch to output containing changes all the way from last commit on main branch
     patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
@@ -144,7 +148,7 @@ def lazy_test_pipeline(app_path: Path,
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,
-                           config_path = Path('./config.ini'),
+                           config_path = config_path,
                            images_path = images_path)
 
     rename_stitched_tiff(out_path)
