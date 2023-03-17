@@ -38,13 +38,21 @@ def execute_command(command: list[str], out_file: Path=None, live_output: bool=F
 
 def test_pipeline(app_path: Path,
                   out_path: Path,
-                  config_path: Path,
-                  images_path: Path):
+                  config_path: Path):
+                  #images_path: Path):
     command = str(app_path)
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
-    command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
+    #command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
     return execute_command(command, out_file=out_path/"log.txt", live_output=True)
+
+
+def create_input_block_for_config(images_path: Path = None):
+    """Return a block for the config.ini that contains all input images."""
+    image_names = ','.join(image_path.name for image_path in images_path.glob('*'))
+    return ('[metric]\n'
+            f'path = {images_path}\n'
+            f'inputs = {image_names}\n')
 
 
 def derive_stitched_result_name(test_case_name: str):
@@ -137,9 +145,11 @@ def lazy_test_pipeline(app_path: Path,
         config_path = Path('.') / 'config.ini'
     if not config_path.exists():
         raise RuntimeError(f'Config expected at {config_path.absolute()} but not found.')
-
     path_of_enriched_config = out_path / 'config.ini'
     shutil.copy(config_path, path_of_enriched_config)
+    with open(path_of_enriched_config, 'a') as f:
+        f.write('\n')
+        f.write(create_input_block_for_config(images_path))
 
     # add patch to output containing changes all the way from last commit on main branch
     patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
@@ -155,8 +165,8 @@ def lazy_test_pipeline(app_path: Path,
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,
-                           config_path = path_of_enriched_config,
-                           images_path = images_path)
+                           config_path = path_of_enriched_config)
+                           #images_path = images_path)
 
     rename_stitched_tiff(out_path)
 

@@ -233,6 +233,18 @@ def test_qa_test_case_names_are_correct_when_description_given():
     assert test_case_name == '001_1234567890_snowyHillside_increasedStepSizeTo42'
 
 
+def test_create_input_block_for_config_returns_correct_block(environment_for_test_pipeline):
+    env = environment_for_test_pipeline
+
+    config_block = ltp.create_input_block_for_config(images_path=env['images_path'])
+
+    image_names = ','.join(image_path.name for image_path in env['images_path'].glob('*'))
+    expected = ('[metric]\n'
+                f"path = {env['images_path']}\n"
+                f'inputs = {image_names}\n')
+    assert config_block == expected
+
+
 #-----------------------------------------------------------------------test ltp
 def test_execute_command_copies_stdout_to_out_path(tmpdir):
     content = 'hello world!'
@@ -248,11 +260,10 @@ def test_call_test_pipeline_executes_the_expected_command(environment_for_test_p
     env = environment_for_test_pipeline
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
                                           out_path = env['out_path'],
-                                          config_path = env['config_path'],
-                                          images_path = env['images_path'])
+                                          config_path = env['config_path'])
 
-    expected_command = (f"{env['app_path']} -f {env['config_path']} -o {env['out_path']} " +
-                         ' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
+    expected_command = f"{env['app_path']} -f {env['config_path']} -o {env['out_path']}"
+                         #' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
     assert command_triggered == expected_command
 
 
@@ -268,7 +279,7 @@ def test_lazy_test_pipeline_copies_config(environment_for_test_pipeline):
 
     config_copies = list(env['out_path'].glob('*/config.ini'))
     assert len(config_copies) == 1
-    assert content_of(config_copies[0]) == content_of(env['config_path'])
+    assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
 
 
 def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
@@ -284,7 +295,7 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     # ...the local config (at env['config_path']) is used
     get_config_argument = lambda call : re.match(r'.*-f (\S*).*', call).group(1) # capture argument after '-f' flag
     config_used_path = get_config_argument(what_was_called)
-    assert content_of(config_used_path) == content_of(env['config_path'])
+    assert content_of(env['config_path']) in content_of(config_used_path) # not equal, copy is enriched
 
 
 def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(environment_for_test_pipeline):
