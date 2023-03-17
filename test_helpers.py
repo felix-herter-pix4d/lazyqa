@@ -24,6 +24,14 @@ def git(*args, repo: Path=None):
     return helpers.subprocess_output(command)
 
 
+def content_of(file: Path) -> str:
+    """Return the content of the file."""
+    result = None
+    with open(file) as f:
+        result = f.read().strip()
+    return result
+
+
 @pytest.fixture
 def out_dir_with_qa_test_cases(tmp_path):
     """Fixture that yields a directory with some folders inside.
@@ -232,9 +240,7 @@ def test_execute_command_copies_stdout_to_out_path(tmpdir):
 
     ltp.execute_command(command, out_file=out_file)
 
-    stored_content = None
-    with open(out_file) as f:
-        stored_content = f.read().strip()
+    stored_content = content_of(out_file)
     assert stored_content  == content
 
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
