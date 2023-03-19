@@ -116,6 +116,8 @@ def environment_for_test_pipeline(repo_with_executable,
     This comprises
      * `repo_path`   path to a git repo
      * `app_path`    path to a dummy test_pipeline app inside `repo`for introspection
+                     the app is a dummy that returns the call with with it was invoked
+                     to allow inspecting if the arguments passed to the app are correct
      * `images_path` path to a folder with dummy images
      * `config_path` dummy path to a config file
      * `out_path`    dummy path to an output folder
