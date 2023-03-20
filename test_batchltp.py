@@ -6,11 +6,49 @@ import pytest
 import re
 
 
+@pytest.fixture
+def two_qa_projects_with_images(tmp_path):
+    """Fixture that yields two QA projects, each with subdirectory 'images' containing dummy images."""
+    project_names = ('snowy_hillside', 'rolling_mountain')
+    qa_project_paths = tuple(tmp_path / project_name for project_name in project_names)
+    images_paths = tuple(qa_project_path / 'images' for qa_project_path in qa_project_paths)
+    for images_path in images_paths:
+        images_path.mkdir(parents=True, exist_ok=True)
+        insert_dummy_images(images_path)
+    yield {'qa_project_path_1': qa_project_paths[0], 'images_path_1': images_paths[0],
+           'qa_project_path_2': qa_project_paths[1], 'images_path_2': images_paths[1]}
+
+
 def parse_lazytp_call(call: str):
     #executable_regex = config_path_regex = out_path_regex = r'(\S+)' # TODO: use this
     call_regex = r'(\S+) -f (\S+) -o (\S+)' # captures 1. executable name, 2. config path, 3. out path
     parsed = re.match(call_regex, call)
     return {'executable': parsed.group(1), 'config': parsed.group(2), 'output': parsed.group(3)}
+
+
+def test_guess_images_subfolder_returns_subfolder_named_images_when_present(tmp_path):
+    images_folder = tmp_path / 'images'
+    images_folder.mkdir()
+
+    assert btp.guess_images_subfolder(tmp_path) == images_folder
+
+
+def test_guess_images_subfolder_returns_first_sole_subfolder_with_images(tmp_path):
+    images_folder = tmp_path / 'the_input'
+    images_folder.mkdir()
+    insert_dummy_images(images_folder)
+    (tmp_path / 'no_input').mkdir()
+
+    assert btp.guess_images_subfolder(tmp_path) == images_folder
+
+
+def test_guess_images_subfolder_raises_exception_when_images_subfolder_ambiguous(tmp_path):
+    candidates_paths = (tmp_path / 'images1', tmp_path / 'images2')
+    for candidates_path in candidates_paths:
+        candidates_path.mkdir()
+        insert_dummy_images(candidates_path)
+    with pytest.raises(btp.AmbiguousQAProjectLayoutException):
+        btp.guess_images_subfolder(tmp_path)
 
 
 # Reasonability checks to build trust that the call to batchltp behaves correctly
