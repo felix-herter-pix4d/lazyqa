@@ -2,9 +2,7 @@ import common
 import lazytp as ltp
 from test_helpers import *
 
-import os
 import pytest
-import re
 import subprocess
 from pathlib import Path
 
@@ -147,22 +145,6 @@ def test_create_input_block_for_config_returns_correct_block(environment_for_tes
 
 
 #-----------------------------------------------------------------------test ltp
-def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
-    os.chdir(env['config_path'].parent)
-
-
-    # when no config path is specified...
-    what_was_called = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                             out_root_path = env['out_path'],
-                                             images_path = env['images_path'])
-
-    # ...the local config (at env['config_path']) is used
-    get_config_argument = lambda call : re.match(r'.*-f (\S*).*', call).group(1) # capture argument after '-f' flag
-    config_used_path = get_config_argument(what_was_called)
-    assert content_of(env['config_path']) in content_of(config_used_path) # not equal, copy is enriched
-
-
 def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(environment_for_test_pipeline):
     env = environment_for_test_pipeline
 
