@@ -4,6 +4,14 @@ import pytest
 import subprocess
 
 
+def content_of(file: Path) -> str:
+    """Return the content of the file."""
+    result = None
+    with open(file) as f:
+        result = f.read().strip()
+    return result
+
+
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)

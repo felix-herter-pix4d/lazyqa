@@ -16,14 +16,6 @@ def subprocess_output(command: list[str]):
     return result.stdout.decode('utf-8').strip()
 
 
-def content_of(file: Path) -> str:
-    """Return the content of the file."""
-    result = None
-    with open(file) as f:
-        result = f.read().strip()
-    return result
-
-
 @pytest.fixture
 def repo_with_dev_branch(repo_dir, repo_with_executable):
     git('checkout', '-b', 'dev_branch', repo=repo_dir)
@@ -155,21 +147,6 @@ def test_create_input_block_for_config_returns_correct_block(environment_for_tes
 
 
 #-----------------------------------------------------------------------test ltp
-def test_lazy_test_pipeline_copies_config(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
-    get_all_config_copies = lambda : list(env['out_path'].glob('*/config.ini'))
-    assert len(get_all_config_copies()) == 0
-
-    ltp.lazy_test_pipeline(app_path = env['app_path'],
-                           out_root_path = env['out_path'],
-                           config_path = env['config_path'],
-                           images_path = env['images_path'])
-
-    config_copies = list(env['out_path'].glob('*/config.ini'))
-    assert len(config_copies) == 1
-    assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
-
-
 def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     env = environment_for_test_pipeline
     os.chdir(env['config_path'].parent)
