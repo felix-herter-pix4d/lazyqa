@@ -13,29 +13,6 @@ import sys
 from pathlib import Path
 
 
-def execute_command(command: list[str], out_file: Path=None, live_output: bool=False):
-    process = subprocess.Popen(command,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               encoding='utf-8',
-                               shell=True)
-    output_lines = []
-    file = open(out_file, 'w+') if out_file is not None else None
-
-    for line in iter(process.stdout.readline, ''):
-        if live_output:
-            print(line, end='')
-        if file is not None:
-            file.write(line)
-
-        output_lines.append(line.strip())
-
-    if file is not None:
-        file.close()
-
-    return '\n'.join(output_lines)
-
-
 def test_pipeline(app_path: Path,
                   out_path: Path,
                   config_path: Path):
@@ -44,7 +21,7 @@ def test_pipeline(app_path: Path,
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
     #command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
-    return execute_command(command, out_file=out_path/"log.txt", live_output=True)
+    return helpers.execute_command(command, out_file=out_path/"log.txt", live_output=True)
 
 
 def create_input_block_for_config(images_path: Path = None):

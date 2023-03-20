@@ -146,6 +146,17 @@ def test_that_path_into_git_repo_is_correctly_detected(repo_with_executable):
     assert helpers.is_part_of_git_repo(repo_with_executable()['executable'])
 
 
+def test_execute_command_copies_stdout_to_out_path(tmpdir):
+    content = 'hello world!'
+    command = [f'echo {content}']
+    out_file = tmpdir / "output.txt"
+
+    helpers.execute_command(command, out_file=out_file)
+
+    stored_content = content_of(out_file)
+    assert stored_content  == content
+
+
 #----------------------------------------------------------------------test Repo
 def test_repo_class_can_be_constructed_from_repo_path(repo_dir):
     helpers.Repo(repo_dir)
@@ -248,16 +259,6 @@ def test_create_input_block_for_config_returns_correct_block(environment_for_tes
 
 
 #-----------------------------------------------------------------------test ltp
-def test_execute_command_copies_stdout_to_out_path(tmpdir):
-    content = 'hello world!'
-    command = [f'echo {content}']
-    out_file = tmpdir / "output.txt"
-
-    ltp.execute_command(command, out_file=out_file)
-
-    stored_content = content_of(out_file)
-    assert stored_content  == content
-
 def test_call_test_pipeline_executes_the_expected_command(environment_for_test_pipeline):
     env = environment_for_test_pipeline
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
