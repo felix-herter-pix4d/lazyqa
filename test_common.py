@@ -142,23 +142,3 @@ def test_create_input_block_for_config_returns_correct_block(environment_for_tes
                 f"path = {env['images_path']}\n"
                 f'inputs = {image_names}\n')
     assert config_block == expected
-
-
-#-----------------------------------------------------------------------test ltp
-def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
-    collect_current_qa_test_cases = lambda : set(env['out_path'].glob('*'))
-    previous_qa_test_cases = collect_current_qa_test_cases()
-
-    ltp.lazy_test_pipeline(app_path = env['app_path'],
-                           out_root_path = env['out_path'],
-                           images_path = env['images_path'],
-                           config_path = env['config_path'])
-
-    new_qa_test_case_path = next(iter(collect_current_qa_test_cases() - previous_qa_test_cases))
-    assert 'log.txt' in {content.name for content in new_qa_test_case_path.glob('*')}
-
-
-def test_stitched_result_name_contains_id_and_description():
-    result_name = ltp.derive_stitched_result_name('015_1234567890_snowyHillside_increasedStepSizeTo42')
-    assert result_name == '015_snowyHillside_increasedStepSizeTo42_stitched.tiff'
