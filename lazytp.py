@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import helpers
+import common
 
 
 import argparse
@@ -21,7 +21,7 @@ def test_pipeline(app_path: Path,
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
     #command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
-    return helpers.execute_command(command, out_file=out_path/"log.txt", live_output=True)
+    return common.execute_command(command, out_file=out_path/"log.txt", live_output=True)
 
 
 def create_input_block_for_config(images_path: Path = None):
@@ -34,7 +34,7 @@ def create_input_block_for_config(images_path: Path = None):
 
 def derive_stitched_result_name(test_case_name: str):
     """Derived name has the form '<id>_<optionalDescription>_stitched.tiff'.'"""
-    parsed = helpers.parse_test_case_name(test_case_name)
+    parsed = common.parse_test_case_name(test_case_name)
     components = [parsed['id'], parsed['dataset_name']]
     if parsed['optional_description'] is not None:
         components += [parsed['optional_description']]
@@ -78,7 +78,7 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
         exit(-1)
 
     # binary not part of git repo?
-    if not helpers.is_part_of_git_repo(app_path):
+    if not common.is_part_of_git_repo(app_path):
         print(f'{colors.red}',
               f'binary {app_path} must be inside the repo',
               f'{colors.normal}')
@@ -94,15 +94,15 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
             input('(press any key to continue)')
 
 
-def get_lazytp_test_case_name(repo: helpers.Repo, out_path: Path, images_path: Path, optional_description: str=None):
+def get_lazytp_test_case_name(repo: common.Repo, out_path: Path, images_path: Path, optional_description: str=None):
     """Use as id one more than the largest qa test case id we find in the out_path.
 
     If all test cases were generated with lazytp this implies that they all have increasing ids.
     """
-    _id = helpers.get_next_id(out_path)
+    _id = common.get_next_id(out_path)
     sha1 = repo.get_sha_of_branch('HEAD', short=True)
-    project_name = helpers.camel_case(images_path.parent.name)
-    return helpers.create_test_case_name(_id, sha1, project_name, optional_description)
+    project_name = common.camel_case(images_path.parent.name)
+    return common.create_test_case_name(_id, sha1, project_name, optional_description)
 
 
 def lazy_test_pipeline(app_path: Path,
@@ -110,7 +110,7 @@ def lazy_test_pipeline(app_path: Path,
                        images_path: Path,
                        optional_description: str = None,
                        config_path: Path = None):
-    repo = helpers.Repo(app_path)
+    repo = common.Repo(app_path)
     out_path = out_root_path / get_lazytp_test_case_name(repo=repo,
                                                          out_path=out_root_path,
                                                          images_path=images_path,
