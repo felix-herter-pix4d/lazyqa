@@ -20,7 +20,6 @@ def test_pipeline(app_path: Path,
     command = str(app_path)
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
-    #command += ' ' + ' '.join(str(image_path) for image_path in images_path.glob('*'))
     return common.execute_command(command, out_file=out_path/"log.txt", live_output=True)
 
 
@@ -143,7 +142,6 @@ def lazy_test_pipeline(app_path: Path,
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,
                            config_path = path_of_enriched_config)
-                           #images_path = images_path)
 
     rename_stitched_tiff(out_path)
 
