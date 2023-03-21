@@ -5,7 +5,7 @@ from test_helpers import *
 import re
 
 def test_calling_test_pipeline_calls_the_expected_command(make_environment_for_test_pipeline):
-    env = make_environment_for_test_pipeline()
+    env = make_environment_for_test_pipeline(executable = echo_call_program)
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
                                           out_path = env['out_path'],
                                           config_path = env['config_path'])
@@ -31,9 +31,8 @@ def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
 
 
 def test_lazy_test_pipeline_reads_local_config(make_environment_for_test_pipeline):
-    env = make_environment_for_test_pipeline()
+    env = make_environment_for_test_pipeline(executable=echo_call_program)
     os.chdir(env['config_path'].parent)
-
 
     # when no config path is specified...
     what_was_called = ltp.lazy_test_pipeline(app_path = env['app_path'],
