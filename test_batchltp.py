@@ -9,13 +9,15 @@ import re
 @pytest.fixture
 def two_qa_projects_with_images(tmp_path):
     """Fixture that yields two QA projects, each with subdirectory 'images' containing dummy images."""
-    project_names = ('snowy_hillside', 'rolling_mountain')
-    qa_project_paths = tuple(tmp_path / project_name for project_name in project_names)
+    qa_projects_root_path = tmp_path / 'projects'
+    project_names = ('luscious_greens', 'rolling_mountain')
+    qa_project_paths = tuple(qa_projects_root_path / project_name for project_name in project_names)
     images_paths = tuple(qa_project_path / 'images' for qa_project_path in qa_project_paths)
     for images_path in images_paths:
         images_path.mkdir(parents=True, exist_ok=True)
         insert_dummy_images(images_path)
-    yield {'qa_project_path_1': qa_project_paths[0], 'images_path_1': images_paths[0],
+    yield {'qa_projects_root_path': qa_projects_root_path,
+           'qa_project_path_1': qa_project_paths[0], 'images_path_1': images_paths[0],
            'qa_project_path_2': qa_project_paths[1], 'images_path_2': images_paths[1]}
 
 
@@ -47,7 +49,7 @@ def test_guess_images_subfolder_raises_exception_when_images_subfolder_ambiguous
     for candidates_path in candidates_paths:
         candidates_path.mkdir()
         insert_dummy_images(candidates_path)
-    with pytest.raises(btp.AmbiguousQAProjectLayoutException):
+    with pytest.raises(btp.CannotGuessInputImagesFolderException):
         btp.guess_images_subfolder(tmp_path)
 
 
@@ -74,13 +76,28 @@ def test_gather_input_paths_from_qa_projects_root_collects_all_ambiguous_paths(t
 
 # Reasonability checks to build trust that the call to batchltp behaves correctly
 
+def test_gather_batchtp_arg_from_qa_projects_root(two_qa_projects_with_images,
+                                                  make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
+
+    arg_list = btp.gather_batchtp_arguments(qa_projects_root_path=two_qa_projects_with_images['qa_projects_root_path'],
+                                        app_path=env['app_path'],
+                                        out_root_path=env['out_path'],
+                                        optional_description='some description',
+                                        config_path=env['config_path'])
+    assert len(arg_list ) == 2
+    expected_keys = set(('app_path', 'out_root_path',
+                        'images_path', 'optional_description', 'config_path'))
+    assert set(arg_list[0].keys()) == expected_keys
+    assert set(arg_list[1].keys()) == expected_keys
+
 def make_lazytp_args(env: dict,
                      app_path: Path = None,
                      out_root_path: Path = None,
                      images_path: Path = None,
                      optional_description: str = None,
                      config_path: Path = None):
-    """Return a parameter-bundle that can be passed to lazytp, and thus, to batch_ltp."""
+    """Return parameter-bundle that can be passed to lazytp and (in a list) to batch_ltp."""
     return {"app_path": app_path or env["app_path"],
             "out_root_path": out_root_path or env["out_path"],
             "images_path": images_path or env['images_path'],
