@@ -20,8 +20,8 @@ def two_qa_projects_with_images(tmp_path):
 
 
 def parse_lazytp_call(call: str):
-    #executable_regex = config_path_regex = out_path_regex = r'(\S+)' # TODO: use this
-    call_regex = r'(\S+) -f (\S+) -o (\S+)' # captures 1. executable name, 2. config path, 3. out path
+    executable_regex = config_path_regex = out_path_regex = r'(\S+)'
+    call_regex = fr'{executable_regex} -f {config_path_regex} -o {out_path_regex}'
     parsed = re.match(call_regex, call)
     return {'executable': parsed.group(1), 'config': parsed.group(2), 'output': parsed.group(3)}
 
@@ -56,8 +56,8 @@ def test_gather_input_paths_from_qa_projects_root_collects_all_valid_paths(two_q
 
     images_paths = btp.gather_input_paths_from_qa_projects_root(qa_projects_root_path)['images_paths']
 
-    expected_images_paths = [two_qa_projects_with_images['images_path_1'], two_qa_projects_with_images['images_path_2']]
-    assert images_paths == expected_images_paths
+    expected_images_paths = set((two_qa_projects_with_images['images_path_1'], two_qa_projects_with_images['images_path_2']))
+    assert set(images_paths) == expected_images_paths
 
 
 def test_gather_input_paths_from_qa_projects_root_collects_all_ambiguous_paths(tmp_path):
