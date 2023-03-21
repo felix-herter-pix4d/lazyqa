@@ -63,7 +63,7 @@ def gather_input_paths_from_qa_projects_root(projects_root: Path):
     return {'images_paths': images_paths, 'ambiguous_qa_projects': ambiguous_qa_projects}
 
 
-def gather_batchtp_arguments(qa_projects_root_path: Path,
+def gather_batchltp_arguments(qa_projects_root_path: Path,
                              app_path: Path,
                              out_root_path: Path,
                              config_path: Path,
@@ -84,8 +84,10 @@ def batch_ltp(ltp_arguments: list[dict]):
     `ltp_arguments` is a list of dictionaries, each containing the inputs for a call to
     lazytp.lazy_tp().
     """
-    for args in ltp_arguments:
-        yield ltp.lazy_test_pipeline(**args)
+    ltp_arguments = list(ltp_arguments)
+    yield ltp.lazy_test_pipeline(**(ltp_arguments[0]))
+    for args in ltp_arguments[1:]:
+        yield ltp.lazy_test_pipeline(**args, reuse_id=True)
 
 
 if __name__ == "__main__":
@@ -136,7 +138,7 @@ if __name__ == "__main__":
 
     ltp.check_executable(Path(args.test_pipeline), prompt_user_confirmation=not args.no_confirmation)
 
-    gen = batch_ltp(gather_batchtp_arguments(qa_projects_root_path=Path(args.projects_path),
+    gen = batch_ltp(gather_batchltp_arguments(qa_projects_root_path=Path(args.projects_path),
                                              app_path=Path(args.test_pipeline),
                                              out_root_path=Path(args.out_path),
                                              config_path=Path('./config.ini'),

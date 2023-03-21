@@ -93,12 +93,18 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
             input('(press any key to continue)')
 
 
-def get_lazytp_test_case_name(repo: common.Repo, out_path: Path, images_path: Path, optional_description: str=None):
-    """Use as id one more than the largest qa test case id we find in the out_path.
+def get_lazytp_test_case_name(repo: common.Repo,
+                              out_path: Path,
+                              images_path: Path,
+                              optional_description: str = None,
+                              reuse_id = False):
+    """Generate a name for the test case comprising id, sha1, project name, and (optionally) a description.
 
-    If all test cases were generated with lazytp this implies that they all have increasing ids.
+    Per default, the id is more than the largest qa test case id we find in the out_path.
+    It can be specified to re-use the largest id that is present, for use cases where different
+    qa test cases should be identifiable as belonging to one batch.
     """
-    _id = common.get_next_id(out_path)
+    _id = common.find_highest_id(out_path) if reuse_id else common.get_next_id(out_path)
     sha1 = repo.get_sha_of_branch('HEAD', short=True)
     project_name = common.camel_case(images_path.parent.name)
     return common.create_test_case_name(_id, sha1, project_name, optional_description)
@@ -108,12 +114,14 @@ def lazy_test_pipeline(app_path: Path,
                        out_root_path: Path,
                        images_path: Path,
                        optional_description: str = None,
-                       config_path: Path = None):
+                       config_path: Path = None,
+                       reuse_id = False): # re-use last id to indicate that qa test case belongs to same batch
     repo = common.Repo(app_path)
     out_path = out_root_path / get_lazytp_test_case_name(repo=repo,
                                                          out_path=out_root_path,
                                                          images_path=images_path,
-                                                         optional_description=optional_description)
+                                                         optional_description=optional_description,
+                                                         reuse_id=reuse_id)
     out_path.mkdir()
 
     # create enriched config

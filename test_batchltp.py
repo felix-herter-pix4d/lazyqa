@@ -80,11 +80,11 @@ def test_gather_batchtp_arg_from_qa_projects_root(two_qa_projects_with_images,
                                                   make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
 
-    arg_list = btp.gather_batchtp_arguments(qa_projects_root_path=two_qa_projects_with_images['qa_projects_root_path'],
-                                        app_path=env['app_path'],
-                                        out_root_path=env['out_path'],
-                                        optional_description='some description',
-                                        config_path=env['config_path'])
+    arg_list = btp.gather_batchltp_arguments(qa_projects_root_path=two_qa_projects_with_images['qa_projects_root_path'],
+                                            app_path=env['app_path'],
+                                            out_root_path=env['out_path'],
+                                            optional_description='some description',
+                                            config_path=env['config_path'])
     assert len(arg_list ) == 2
     expected_keys = set(('app_path', 'out_root_path',
                         'images_path', 'optional_description', 'config_path'))
@@ -116,8 +116,8 @@ def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_conf
 
 def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_configs(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
-    images_paths = (Path("first/path/to/images"),
-                    Path("second/path/to/images"))
+    images_paths = (Path("project1/images"),
+                    Path("project2/images"))
     projects = (make_lazytp_args(env, images_path = images_path) for images_path in images_paths)
 
     commands_triggered = list(btp.batch_ltp(projects))
@@ -137,3 +137,17 @@ def test_calling_batchltp_with_one_project_creates_correct_output_folder(make_en
     path_to_output = Path(parse_lazytp_call(command_triggered)['output'])
     assert path_to_output.exists()
     assert common.is_test_case_name(path_to_output.name)
+
+def test_batchltp_output_folders_have_the_same_id(two_qa_projects_with_images,
+                                                  make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline(executable = echo_call_program)
+
+    ltp_calls = list(btp.batch_ltp(btp.gather_batchltp_arguments(qa_projects_root_path=two_qa_projects_with_images['qa_projects_root_path'],
+                                                                 app_path=env['app_path'],
+                                                                 out_root_path=env['out_path'],
+                                                                 optional_description='some description',
+                                                                 config_path=env['config_path'])))
+
+    output_folders = [Path(parse_lazytp_call(call)['output']) for call in ltp_calls]
+    ids = [common.parse_test_case_name(folder.name)['id'] for folder in output_folders]
+    assert ids[0] == ids[1]
