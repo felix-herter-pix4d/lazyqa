@@ -87,8 +87,8 @@ def make_lazytp_args(env: dict,
             "optional_description": optional_description or "some description",
             "config_path": config_path or env["config_path"]}
 
-def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_config(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_config(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     images_path = Path("path/to/images")
     projects = [make_lazytp_args(env, images_path = images_path)]
 
@@ -97,8 +97,8 @@ def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_conf
     path_to_used_config = parse_lazytp_call(command_triggered)['config']
     assert f'path = {images_path}' in content_of(path_to_used_config)
 
-def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_configs(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_configs(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     images_paths = (Path("first/path/to/images"),
                     Path("second/path/to/images"))
     projects = (make_lazytp_args(env, images_path = images_path) for images_path in images_paths)
@@ -111,8 +111,8 @@ def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_con
     assert f'path = {images_paths[0]}' in content_of(paths_to_used_configs[0])
     assert f'path = {images_paths[1]}' in content_of(paths_to_used_configs[1])
 
-def test_calling_batchltp_with_one_project_creates_correct_output_folder(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_calling_batchltp_with_one_project_creates_correct_output_folder(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     projects = [make_lazytp_args(env)]
 
     command_triggered = next(btp.batch_ltp(projects))

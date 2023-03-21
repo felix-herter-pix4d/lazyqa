@@ -4,8 +4,8 @@ from test_helpers import *
 
 import re
 
-def test_calling_test_pipeline_calls_the_expected_command(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_calling_test_pipeline_calls_the_expected_command(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
                                           out_path = env['out_path'],
                                           config_path = env['config_path'])
@@ -15,8 +15,8 @@ def test_calling_test_pipeline_calls_the_expected_command(environment_for_test_p
     assert command_triggered == expected_command
 
 
-def test_lazy_test_pipeline_copies_config(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     get_all_config_copies = lambda : list(env['out_path'].glob('*/config.ini'))
     assert len(get_all_config_copies()) == 0
 
@@ -30,8 +30,8 @@ def test_lazy_test_pipeline_copies_config(environment_for_test_pipeline):
     assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
 
 
-def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_lazy_test_pipeline_reads_local_config(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     os.chdir(env['config_path'].parent)
 
 
@@ -46,8 +46,8 @@ def test_lazy_test_pipeline_reads_local_config(environment_for_test_pipeline):
     assert content_of(env['config_path']) in content_of(config_used_path) # not equal, copy is enriched
 
 
-def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],
                            out_root_path = env['out_path'],
@@ -60,8 +60,8 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is
     assert len(list(all_correct_output_folders)) == 1
 
 
-def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_given(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_given(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     description = "this is a test case"
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],
@@ -78,8 +78,8 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
     assert len(list(all_correct_output_folders)) == 1
 
 
-def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
     collect_current_qa_test_cases = lambda : set(env['out_path'].glob('*'))
     previous_qa_test_cases = collect_current_qa_test_cases()
 

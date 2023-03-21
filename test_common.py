@@ -95,8 +95,8 @@ def test_repo_class_untracked_changes_returns_empty_patch_when_there_are_no_chan
     assert patch == ''
 
 #-----------------------------------------------------------------test_QAProject
-def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(environment_for_test_pipeline):
-    common.QAProject(environment_for_test_pipeline['images_path'].parent)
+def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(make_environment_for_test_pipeline):
+    common.QAProject(make_environment_for_test_pipeline()['images_path'].parent)
 
 
 def test_qa_project_class_cannot_be_created_when_images_directory_is_missing(tmp_path):
@@ -132,8 +132,8 @@ def test_qa_test_case_names_are_correct_when_description_given():
     assert test_case_name == '001_1234567890_snowyHillside_increasedStepSizeTo42'
 
 
-def test_create_input_block_for_config_returns_correct_block(environment_for_test_pipeline):
-    env = environment_for_test_pipeline
+def test_create_input_block_for_config_returns_correct_block(make_environment_for_test_pipeline):
+    env = make_environment_for_test_pipeline()
 
     config_block = ltp.create_input_block_for_config(images_path=env['images_path'])
 

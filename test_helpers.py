@@ -99,9 +99,9 @@ def insert_dummy_config(path: Path):
 
 
 @pytest.fixture
-def environment_for_test_pipeline(repo_with_executable,
-                                  qa_project_with_images,
-                                  out_dir_with_qa_test_cases):
+def make_environment_for_test_pipeline(repo_with_executable,
+                                       qa_project_with_images,
+                                       out_dir_with_qa_test_cases):
     """Fixture that yields a complete environment for test_pipeline.
 
     This comprises
@@ -113,16 +113,19 @@ def environment_for_test_pipeline(repo_with_executable,
      * `config_path` Dummy path to a config file.
      * `out_path`    Dummy path to an output folder.
     """
-    repo_with_call_inspection_executable = repo_with_executable(executable=echo_call_program)
-    repo_path = repo_with_call_inspection_executable['repo']
-    app_path = repo_with_call_inspection_executable['executable']
-    images_path = qa_project_with_images['images_path']
-    config_path = insert_dummy_config(repo_path.parent)
-    out_path = out_dir_with_qa_test_cases
-    return {'repo_path': repo_path,
-            'app_path': app_path,
-            'images_path': images_path,
-            'config_path': config_path,
-            'out_path': out_path}
+    def environment_for_test_pipeline(executable = echo_call_program):
+        """The actual fixture. Allows altering the environment as needed."""
+        repo_with_call_inspection_executable = repo_with_executable(executable=executable)
+        repo_path = repo_with_call_inspection_executable['repo']
+        app_path = repo_with_call_inspection_executable['executable']
+        images_path = qa_project_with_images['images_path']
+        config_path = insert_dummy_config(repo_path.parent)
+        out_path = out_dir_with_qa_test_cases
+        return {'repo_path': repo_path,
+                'app_path': app_path,
+                'images_path': images_path,
+                'config_path': config_path,
+                'out_path': out_path}
+    return environment_for_test_pipeline
 
 
