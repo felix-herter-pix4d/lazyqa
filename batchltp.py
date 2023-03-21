@@ -1,7 +1,10 @@
+#!/usr/bin/python3
 # process test_pipeline for batch of test projects
 
 import lazytp as ltp
 
+import argparse
+import sys
 from itertools import chain
 from pathlib import Path
 
@@ -83,3 +86,61 @@ def batch_ltp(ltp_arguments: list[dict]):
     """
     for args in ltp_arguments:
         yield ltp.lazy_test_pipeline(**args)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description =
+           """
+           batch_ltp, batch test_pipeline for lazy people.
+
+           This script calls lazy_tp for each (QA) project in a projects root
+           folder. For convenience, it checks for a stale binary, writes each
+           of the results to an automatically generated output folder that
+           tracks version information of the binary.
+
+           Each project as assumed to reside in it's own folder in the projects
+           root folder. The input images for a project need to reside in a sub-folder
+           named 'images', unless there is only a single folder containing any images.
+           The this unique folder it assumed to contain the input images.
+           """,
+        formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument(
+        '-x', '--test-pipeline',
+        help='Path to test_pipeline executable. Assumed to be somewhere inside the rag repo.'
+    )
+
+    parser.add_argument(
+        '-o', '--out-path',
+        help='Path to where the output should be stored. The script will add a new sub-directory.'
+    )
+
+    parser.add_argument(
+        '-p', '--projects_path',
+        help='Path to the root folder containing the QA projects.'
+    )
+
+    parser.add_argument(
+        '-d', '--description',
+        help='Optional description. It will be appended to the output folder names.'
+    )
+
+    parser.add_argument('--no-confirmation', action='store_true')
+
+    args = parser.parse_args()
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(-1)
+
+    ltp.check_executable(Path(args.test_pipeline), prompt_user_confirmation=not args.no_confirmation)
+
+    gen = batch_ltp(gather_batchtp_arguments(qa_projects_root_path=Path(args.projects_path),
+                                             app_path=Path(args.test_pipeline),
+                                             out_root_path=Path(args.out_path),
+                                             config_path=Path('./config.ini'),
+                                             optional_description=args.description))
+    # trigger all computations
+    for _ in gen:
+        pass
