@@ -34,12 +34,33 @@ def guess_images_subfolder(folder: Path):
             elif contains_images(subfolder):
                 candidates.append(subfolder)
 
-    if len(candidates) == 1:
+    if len(candidates) == 0:
+        return None
+    elif len(candidates) == 1:
         return candidates[0]
     else:
         raise AmbiguousQAProjectLayoutException(
             f'In {folder}: Found {len(candidates)} sub-folders in containing images (expected 1):\n'
             f'{[c.name for c in candidates]}')
+
+
+def gather_input_paths_from_qa_projects_root(projects_root: Path):
+    """Return the paths to the input images sub-folders for each QA project in `projects_root`.
+
+    `projects_root` should be a directory containing a set of QA projects, each in it's own
+    folder. For each of these folders, guess which sub-folder contains the images. Take note of any
+    folders where the images sub-folder is ambiguous and return a dict
+    {'images_paths': list(Path), 'ambiguous_qa_projects': list(Path)}.
+    """
+    images_paths = []
+    ambiguous_qa_projects = []
+    candidates = (subfolder for subfolder in projects_root.iterdir() if subfolder.is_dir())
+    for c in candidates:
+        try:
+            images_paths.append(guess_images_subfolder(c))
+        except AmbiguousQAProjectLayoutException:
+            ambiguous_qa_projects.append(c)
+    return {'images_paths': images_paths, 'ambiguous_qa_projects': ambiguous_qa_projects}
 
 
 def batch_ltp(ltp_arguments: list[dict]):

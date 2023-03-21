@@ -51,6 +51,27 @@ def test_guess_images_subfolder_raises_exception_when_images_subfolder_ambiguous
         btp.guess_images_subfolder(tmp_path)
 
 
+def test_gather_input_paths_from_qa_projects_root_collects_all_valid_paths(two_qa_projects_with_images):
+    qa_projects_root_path = two_qa_projects_with_images['qa_project_path_1'].parent
+
+    images_paths = btp.gather_input_paths_from_qa_projects_root(qa_projects_root_path)['images_paths']
+
+    expected_images_paths = [two_qa_projects_with_images['images_path_1'], two_qa_projects_with_images['images_path_2']]
+    assert images_paths == expected_images_paths
+
+
+def test_gather_input_paths_from_qa_projects_root_collects_all_ambiguous_paths(tmp_path):
+    ambiguous_project = tmp_path / 'ambiguous'
+    for images_path in (ambiguous_project/'inputs_1', ambiguous_project/'inputs_2'):
+        images_path.mkdir(parents = True)
+        insert_dummy_images(images_path)
+
+    ambiguous_qa_projects = btp.gather_input_paths_from_qa_projects_root(ambiguous_project.parent)['ambiguous_qa_projects']
+
+    expected_ambiguous_projects = [ambiguous_project]
+    assert ambiguous_qa_projects == expected_ambiguous_projects
+
+
 # Reasonability checks to build trust that the call to batchltp behaves correctly
 
 def make_lazytp_args(env: dict,
@@ -99,4 +120,3 @@ def test_calling_batchltp_with_one_project_creates_correct_output_folder(environ
     path_to_output = Path(parse_lazytp_call(command_triggered)['output'])
     assert path_to_output.exists()
     assert common.is_test_case_name(path_to_output.name)
-
