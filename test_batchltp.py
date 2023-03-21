@@ -44,7 +44,8 @@ def test_guess_images_subfolder_returns_first_sole_subfolder_with_images(tmp_pat
     assert btp.guess_images_subfolder(tmp_path) == images_folder
 
 
-def test_guess_images_subfolder_raises_exception_when_images_subfolder_ambiguous(tmp_path):
+def test_guess_images_subfolder_raises_exception_when_images_subfolder_faulty(tmp_path):
+    # no folder named 'images', two candidates containing images -> faulty
     candidates_paths = (tmp_path / 'images1', tmp_path / 'images2')
     for candidates_path in candidates_paths:
         candidates_path.mkdir()
@@ -56,22 +57,23 @@ def test_guess_images_subfolder_raises_exception_when_images_subfolder_ambiguous
 def test_gather_input_paths_from_qa_projects_root_collects_all_valid_paths(two_qa_projects_with_images):
     qa_projects_root_path = two_qa_projects_with_images['qa_project_path_1'].parent
 
-    images_paths = btp.gather_input_paths_from_qa_projects_root(qa_projects_root_path)['images_paths']
+    images_paths = btp.gather_images_paths_from_qa_projects_root(qa_projects_root_path)['images_paths']
 
     expected_images_paths = set((two_qa_projects_with_images['images_path_1'], two_qa_projects_with_images['images_path_2']))
     assert set(images_paths) == expected_images_paths
 
 
-def test_gather_input_paths_from_qa_projects_root_collects_all_ambiguous_paths(tmp_path):
-    ambiguous_project = tmp_path / 'ambiguous'
-    for images_path in (ambiguous_project/'inputs_1', ambiguous_project/'inputs_2'):
+def test_gather_input_paths_from_qa_projects_root_collects_all_faulty_projects(tmp_path):
+    faulty_project = tmp_path / 'faulty'
+    # no folder named 'images', two candidates containing images -> faulty
+    for images_path in (faulty_project/'inputs_1', faulty_project/'inputs_2'):
         images_path.mkdir(parents = True)
         insert_dummy_images(images_path)
 
-    ambiguous_qa_projects = btp.gather_input_paths_from_qa_projects_root(ambiguous_project.parent)['ambiguous_qa_projects']
+    faulty_qa_projects = btp.gather_images_paths_from_qa_projects_root(faulty_project.parent)['faulty_qa_projects']
 
-    expected_ambiguous_projects = [ambiguous_project]
-    assert ambiguous_qa_projects == expected_ambiguous_projects
+    expected_faulty_projects = [faulty_project]
+    assert faulty_qa_projects == expected_faulty_projects
 
 
 # Reasonability checks to build trust that the call to batchltp behaves correctly
