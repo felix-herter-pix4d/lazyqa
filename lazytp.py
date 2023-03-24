@@ -17,7 +17,6 @@ def test_pipeline(app_path: Path,
                   out_path: Path,
                   config_path: Path,
                   live_output=True):
-                  #images_path: Path):
     command = str(app_path)
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
