@@ -78,16 +78,16 @@ def gather_batchltp_arguments(qa_projects_root_path: Path,
             for image_path in images_paths]
 
 
-def batch_ltp(ltp_arguments: list[dict]):
+def batch_ltp(ltp_arguments: list[dict], live_output: bool = True):
     """Call lazy_tp on a batch of projects.
 
     `ltp_arguments` is a list of dictionaries, each containing the inputs for a call to
     lazytp.lazy_tp().
     """
     ltp_arguments = list(ltp_arguments)
-    yield ltp.lazy_test_pipeline(**(ltp_arguments[0]))
+    yield ltp.lazy_test_pipeline(**(ltp_arguments[0]), live_output=live_output)
     for args in ltp_arguments[1:]:
-        yield ltp.lazy_test_pipeline(**args, reuse_id=True)
+        yield ltp.lazy_test_pipeline(**args, reuse_id=True, live_output=live_output)
 
 
 if __name__ == "__main__":

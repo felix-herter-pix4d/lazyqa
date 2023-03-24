@@ -111,7 +111,7 @@ def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_conf
     images_path = Path("path/to/images")
     projects = [make_lazytp_args(env, images_path = images_path)]
 
-    command_triggered = next(btp.batch_ltp(projects))
+    command_triggered = next(btp.batch_ltp(projects, live_output = False))
 
     path_to_used_config = parse_lazytp_call(command_triggered)['config']
     assert f'path = {images_path}' in content_of(path_to_used_config)
@@ -122,7 +122,7 @@ def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_con
                     Path("project2/images"))
     projects = (make_lazytp_args(env, images_path = images_path) for images_path in images_paths)
 
-    commands_triggered = list(btp.batch_ltp(projects))
+    commands_triggered = list(btp.batch_ltp(projects, live_output = False))
 
     assert len(commands_triggered) == 2
     paths_to_used_configs = [parse_lazytp_call(command_triggered)['config']
@@ -134,7 +134,7 @@ def test_calling_batchltp_with_one_project_creates_correct_output_folder(make_en
     env = make_environment_for_test_pipeline()
     projects = [make_lazytp_args(env)]
 
-    command_triggered = next(btp.batch_ltp(projects))
+    command_triggered = next(btp.batch_ltp(projects, live_output = False))
 
     path_to_output = Path(parse_lazytp_call(command_triggered)['output'])
     assert path_to_output.exists()
@@ -148,7 +148,8 @@ def test_batchltp_output_folders_have_the_same_id(two_qa_projects_with_images,
                                                                  app_path=env['app_path'],
                                                                  out_root_path=env['out_path'],
                                                                  optional_description='some description',
-                                                                 config_path=env['config_path'])))
+                                                                 config_path=env['config_path']),
+                                   live_output = False))
 
     output_folders = [Path(parse_lazytp_call(call)['output']) for call in ltp_calls]
     ids = [common.parse_test_case_name(folder.name)['id'] for folder in output_folders]

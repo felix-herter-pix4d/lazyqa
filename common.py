@@ -11,7 +11,10 @@ def camel_case(s: str):
     return components[0] + "".join(c.title() for c in components[1:])
 
 
-def execute_command(command: list[str], out_file: Path=None, live_output: bool=False):
+def execute_command(command: list[str], # command to be executed
+                    out_file: Path = None, # where to store the stdout (and also stderr)
+                    live_output: bool = False # print command's stdout
+                    ):
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
@@ -37,11 +40,7 @@ def execute_command(command: list[str], out_file: Path=None, live_output: bool=F
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)
-    try:
-        result.check_returncode()
-    except subprocess.CalledProcessError as err:
-        print(f"subprocess: '{command}' raised {err}\nstdout: {result.stderr.decode('utf-8').strip()}")
-        raise err
+    result.check_returncode()
     return result.stdout.decode('utf-8').strip()
 
 

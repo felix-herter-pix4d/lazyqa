@@ -8,7 +8,8 @@ def test_calling_test_pipeline_calls_the_expected_command(make_environment_for_t
     env = make_environment_for_test_pipeline(executable = echo_call_program)
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
                                           out_path = env['out_path'],
-                                          config_path = env['config_path'])
+                                          config_path = env['config_path'],
+                                          live_output = False)
 
     expected_command = f"{env['app_path']} -f {env['config_path']} -o {env['out_path']}"
                          #' '.join(str(image_path) for image_path in env['images_path'].glob('*')))
@@ -23,7 +24,8 @@ def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
     ltp.lazy_test_pipeline(app_path = env['app_path'],
                            out_root_path = env['out_path'],
                            config_path = env['config_path'],
-                           images_path = env['images_path'])
+                           images_path = env['images_path'],
+                           live_output=False)
 
     config_copies = list(env['out_path'].glob('*/config.ini'))
     assert len(config_copies) == 1
@@ -37,7 +39,8 @@ def test_lazy_test_pipeline_reads_local_config(make_environment_for_test_pipelin
     # when no config path is specified...
     what_was_called = ltp.lazy_test_pipeline(app_path = env['app_path'],
                                              out_root_path = env['out_path'],
-                                             images_path = env['images_path'])
+                                             images_path = env['images_path'],
+                                             live_output=False)
 
     # ...the local config (at env['config_path']) is used
     get_config_argument = lambda call : re.match(r'.*-f (\S*).*', call).group(1) # capture argument after '-f' flag
@@ -51,7 +54,8 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is
     ltp.lazy_test_pipeline(app_path = env['app_path'],
                            out_root_path = env['out_path'],
                            images_path = env['images_path'],
-                           config_path = env['config_path'])
+                           config_path = env['config_path'],
+                           live_output=False)
 
     expected_qa_project_name = common.camel_case(env['images_path'].parent.name)
     expected_id = '004' # previous highest id was 003
@@ -67,7 +71,8 @@ def test_lazy_test_pipeline_creates_correct_output_folder_when_description_is_gi
                            out_root_path = env['out_path'],
                            optional_description = description,
                            images_path = env['images_path'],
-                           config_path = env['config_path'])
+                           config_path = env['config_path'],
+                           live_output=False)
 
     expected_qa_project_name = common.camel_case(env['images_path'].parent.name)
     expected_description = common.camel_case(description)
@@ -85,7 +90,8 @@ def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(make_environment_f
     ltp.lazy_test_pipeline(app_path = env['app_path'],
                            out_root_path = env['out_path'],
                            images_path = env['images_path'],
-                           config_path = env['config_path'])
+                           config_path = env['config_path'],
+                           live_output=False)
 
     new_qa_test_case_path = next(iter(collect_current_qa_test_cases() - previous_qa_test_cases))
     assert 'log.txt' in {content.name for content in new_qa_test_case_path.glob('*')}

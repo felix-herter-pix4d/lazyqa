@@ -15,12 +15,13 @@ from pathlib import Path
 
 def test_pipeline(app_path: Path,
                   out_path: Path,
-                  config_path: Path):
+                  config_path: Path,
+                  live_output=True):
                   #images_path: Path):
     command = str(app_path)
     command += ' -f ' + str(config_path)
     command += ' -o ' + str(out_path)
-    return common.execute_command(command, out_file=out_path/"log.txt", live_output=True)
+    return common.execute_command(command, out_file=out_path/"log.txt", live_output=live_output)
 
 
 def create_input_block_for_config(images_path: Path = None):
@@ -115,7 +116,8 @@ def lazy_test_pipeline(app_path: Path,
                        images_path: Path,
                        optional_description: str = None,
                        config_path: Path = None,
-                       reuse_id = False): # re-use last id to indicate that qa test case belongs to same batch
+                       reuse_id = False, # re-use last id to indicate that qa test case belongs to same batch
+                       live_output = True):
     repo = common.Repo(app_path)
     out_path = out_root_path / get_lazytp_test_case_name(repo=repo,
                                                          out_path=out_root_path,
@@ -149,7 +151,8 @@ def lazy_test_pipeline(app_path: Path,
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,
-                           config_path = path_of_enriched_config)
+                           config_path = path_of_enriched_config,
+                           live_output=live_output)
 
     rename_stitched_tiff(out_path)
 
