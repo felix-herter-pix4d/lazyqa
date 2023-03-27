@@ -181,7 +181,7 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '-i', '--images_path',
+        '-i', '--images-path',
         help='Path to the \'images\' directory. The parent folder name will be used to name the output sub-directory.'
     )
 
@@ -192,15 +192,19 @@ if __name__ == '__main__':
 
     parser.add_argument('--no-confirmation', action='store_true')
 
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
 
-    if len(sys.argv) < 2:
+    required_arg_names = ('test_pipeline', 'out_path', 'images_path')
+    missing_required_arg_names = [name for name in required_arg_names if args[name] is None]
+    argument_name_to_flag = lambda name : '--' + name.replace('_', '-')
+    if missing_required_arg_names:
+        print("Missing required arguments: ", [argument_name_to_flag(name) for name in missing_required_arg_names])
         parser.print_help()
         sys.exit(-1)
 
-    check_executable(Path(args.test_pipeline), prompt_user_confirmation=not args.no_confirmation)
+    check_executable(Path(args['test_pipeline']), prompt_user_confirmation=not args['no_confirmation'])
 
-    lazy_test_pipeline(app_path = Path(args.test_pipeline),
-                       out_root_path = Path(args.out_path),
-                       images_path = Path(args.images_path),
-                       optional_description=args.description)
+    lazy_test_pipeline(app_path = Path(args['test_pipeline']),
+                       out_root_path = Path(args['out_path']),
+                       images_path = Path(args['images_path']),
+                       optional_description=args['description'])
