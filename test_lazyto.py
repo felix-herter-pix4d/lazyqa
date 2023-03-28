@@ -49,14 +49,17 @@ def environment_for_test_ortho(repo_with_executable,
      * `app_path`    Path to a dummy test_pipeline app inside `repo`for introspection.
                      The app is a dummy that returns the call with which it was invoked
                      to allow inspecting if the arguments passed to the app are correct.
+     * `config_path` Path to a config file.
      * `out_path`    Path to an output folder.
     """
     repo_with_call_inspection_executable = repo_with_executable()
     repo_path = repo_with_call_inspection_executable['repo']
     app_path = repo_with_call_inspection_executable['executable']
+    config_path = insert_dummy_config(repo_path.parent)
     out_path = Path(tempfile.mkdtemp(dir=tmp_path, prefix='out_'))
     return {'repo_path': repo_path,
             'app_path': app_path,
+            'config_path': config_path,
             'out_path': out_path}
 
 
@@ -112,11 +115,51 @@ def test_lazy_test_ortho_creates_correct_output_folder(environment_for_test_orth
     env = environment_for_test_ortho
     pre_matches = list(env['out_path'].glob('001_*_ortho'))
 
-    lto.lazy_test_ortho(app_path = env['app_path'], out_root_path = env['out_path'])
+    lto.lazy_test_ortho(app_path = env['app_path'],
+                        out_root_path = env['out_path'],
+                        config_path=env['config_path']
+                       )
 
     post_matches = list(env['out_path'].glob('001_*_ortho'))
     assert(len(pre_matches) == 0)
     assert(len(post_matches) == 1)
+
+
+def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    get_all_config_copies = lambda : list(env['out_path'].glob('*/{lto.copied_config_name}'))
+    assert len(get_all_config_copies()) == 0
+
+    lto.lazy_test_ortho(app_path=env['app_path'],
+                        out_root_path=env['out_path'],
+                        config_path=env['config_path'])
+
+    config_copies = list(env['out_path'].glob(f'*/{lto.copied_config_name}'))
+    assert len(config_copies) == 1
+    assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
+
+
+def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
+    env = environment_for_test_ortho
+
+    command_called = lto.lazy_test_ortho(app_path=env['app_path'],
+                                         out_root_path=env['out_path'],
+                                         config_path=env['config_path'])
+    parsed = parse_lazy_test_ortho_call(command_called)
+    assert(content_of(parsed['config']) == content_of(env['config_path']))
+
+
+def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    specified_config = env['config_path'].parent / 'another_config.ini'
+    specified_config.touch()
+
+    command_called = lto.lazy_test_ortho(app_path=env['app_path'],
+                                         out_root_path=env['out_path'],
+                                         config_path=specified_config)
+
+    parsed = parse_lazy_test_ortho_call(command_called)
+    assert(content_of(parsed['config']) == content_of(specified_config))
 
 
 if __name__ == "__main__":

@@ -3,7 +3,12 @@
 import common
 
 import re
+import shutil
+import sys
 from pathlib import Path
+
+
+copied_config_name = 'ortho.ini' # we copy the user's config to the output folder
 
 
 def create_lazyto_out_folder_name(repo: common.Repo,
@@ -80,8 +85,27 @@ def test_ortho(app_path: Path,
     return common.execute_command(command, live_output=live_output)
 
 
+def create_config_copy(config_path: Path, out_path: Path):
+    """Copy config to out_path.
+
+    If config_path is None, default to the file named 'config.ini' at the local
+    directory.
+
+    Return the path to the copied config.
+    """
+    default_config_path = Path('.') / 'config.ini'
+    config_path = config_path or default_config_path
+    if not config_path.exists():
+        print(f'Config expected at {config_path.absolute()} but not found.')
+        sys.exit(-1)
+    copied_config_path = out_path / copied_config_name
+    shutil.copy(config_path, copied_config_path)
+    return copied_config_path
+
+
 def lazy_test_ortho(app_path: Path,
                     out_root_path: Path,
+                    config_path: Path = None,
                     description: str = 'ortho'):
     """Create a folder for the output of test_ortho.
 
@@ -107,7 +131,6 @@ def lazy_test_ortho(app_path: Path,
     config_path:   Path to the config file. Default to './config.ini'
     description:   Identifier string that will part of the output folder name.
                    Could be the dataset/project name.
-
     """
     repo = common.Repo(app_path)
 
@@ -115,6 +138,12 @@ def lazy_test_ortho(app_path: Path,
                                                              out_path=out_root_path,
                                                              description=description)
     out_path.mkdir()
+
+    copied_config_path = create_config_copy(config_path = config_path, out_path = out_path)
+
+    output = test_ortho(app_path = app_path, config_path = copied_config_path)
+
+    return output # for testing purposes
 
 
 if __name__ == '__main__':
