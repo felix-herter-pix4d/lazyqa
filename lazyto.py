@@ -99,6 +99,15 @@ def lazy_test_ortho(app_path: Path,
     <description> is a mandatory description that defaults to 'ortho' but could also
                   be the name of the project
     <optionalDescription> is the `optionalDescription` sanitized into CamelCase.
+
+    app_path:      Path to the test_ortho executable. It is assumed that it lives
+                   somewhere in the fastmap repo.
+    out_root_path: Path to a folder. The output folder will be created as a
+                   subfolder of this.
+    config_path:   Path to the config file. Default to './config.ini'
+    description:   Identifier string that will part of the output folder name.
+                   Could be the dataset/project name.
+
     """
     repo = common.Repo(app_path)
 
