@@ -110,8 +110,8 @@ def make_environment_for_test_pipeline(repo_with_executable,
                      The app is a dummy that returns the call with which it was invoked
                      to allow inspecting if the arguments passed to the app are correct.
      * `images_path` Path to a folder with dummy images.
-     * `config_path` Dummy path to a config file.
-     * `out_path`    Dummy path to an output folder.
+     * `config_path` Path to a config file.
+     * `out_path`    Path to an output folder.
     """
     def environment_for_test_pipeline(executable = echo_call_program):
         """The actual fixture. Allows altering the environment as needed."""

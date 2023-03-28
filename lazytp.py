@@ -143,6 +143,23 @@ def lazy_test_pipeline(app_path: Path,
                        config_path: Path = None,
                        reuse_id = False, # re-use last id to indicate that qa test case belongs to same batch
                        live_output = True):
+    """Create a folder for the output and write the test_pipeline results to it.
+
+    The output folder will be a subfolder of `out_root_path` and will be named
+    following the pattern,
+
+        <id>_<sha1>_<datasetName>_<optionalDescription>
+    e.g.
+        003_1234567890_snowyHillside_increasedStepSizeTo42
+
+    <id> is an index that is per default one larger then the largest <id> used
+         in `out_root_path`.
+    <sha1> is a short sha1 of the `test_pipeline` repo at the time
+           `test_pipeline was called
+    <datasetName> is the name of the dataset to which `images_path` belongs. This
+                  is attempted to be derived automatically.
+    <optionalDescription> is the `optionalDescription` sanitized into CamelCase.
+    """
     repo = common.Repo(app_path)
     out_path = out_root_path / get_lazytp_test_case_name(repo=repo,
                                                          out_path=out_root_path,
@@ -183,7 +200,7 @@ if __name__ == '__main__':
 
            This script calls test_pipeline, checks for a stale binary, writes
            the results to an automatically generated output folder that tracks
-           version information of the binary.
+           version information.
            """,
         formatter_class=argparse.RawTextHelpFormatter)
 
