@@ -4,6 +4,7 @@ from test_helpers import *
 
 from pathlib import Path
 import re
+import tempfile
 
 
 def parse_lazy_test_ortho_call(call: str):
@@ -38,6 +39,27 @@ def parse_lazy_test_ortho_call(call: str):
             'command_line_arguments_2': parsed.group('command_line_arguments_2')}
 
 
+@pytest.fixture
+def environment_for_test_ortho(repo_with_executable,
+                               tmp_path):
+    """Fixture that yields a complete environment for test_pipeline.
+
+    This comprises
+     * `repo_path`   Path to a git repo.
+     * `app_path`    Path to a dummy test_pipeline app inside `repo`for introspection.
+                     The app is a dummy that returns the call with which it was invoked
+                     to allow inspecting if the arguments passed to the app are correct.
+     * `out_path`    Path to an output folder.
+    """
+    repo_with_call_inspection_executable = repo_with_executable()
+    repo_path = repo_with_call_inspection_executable['repo']
+    app_path = repo_with_call_inspection_executable['executable']
+    out_path = Path(tempfile.mkdtemp(dir=tmp_path, prefix='out_'))
+    return {'repo_path': repo_path,
+            'app_path': app_path,
+            'out_path': out_path}
+
+
 def test_calling_test_ortho_calls_the_expected_command(repo_with_executable):
     app_path = repo_with_executable(executable=echo_call_program)['executable']
     command_line_arguments = r'[section]\nkey=value'
@@ -55,6 +77,16 @@ def test_calling_test_ortho_calls_the_expected_command(repo_with_executable):
     expected_command = f'{app_path} -c {sanitize(command_line_arguments)} -f {config_path} -c {sanitize(command_line_arguments_2)}'
     assert command == expected_command
 
+
+def test_lazy_test_ortho_creates_correct_output_folder(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    pre_matches = list(env['out_path'].glob('001_*_ortho'))
+
+    lto.lazy_test_ortho(app_path = env['app_path'], out_root_path = env['out_path'])
+
+    post_matches = list(env['out_path'].glob('001_*_ortho'))
+    assert(len(pre_matches) == 0)
+    assert(len(post_matches) == 1)
 
 
 if __name__ == "__main__":

@@ -37,8 +37,39 @@ def test_ortho(app_path: Path,
     return common.execute_command(command, live_output=live_output)
 
 
-def lazy_test_ortho():
-    pass
+def lazy_test_ortho(app_path: Path,
+                    out_root_path: Path,
+                    description: str = 'ortho'):
+    """Create a folder for the output of test_ortho.
+
+    The output folder will be a subfolder of `out_root_path` and will be named
+    following the pattern,
+
+        <id>_<sha1>_<description>_<optionalDescription>
+    e.g.
+        003_1234567890_ortho_increasedStepSizeTo42
+
+    <id> is an index that is per default one larger then the largest <id> used
+         in `out_root_path`.
+    <sha1> is a short sha1 of the `test_ortho` repo at the time `test_ortho`
+           was called
+    <description> is a mandatory description that defaults to 'ortho' but could also
+                  be the name of the project
+    <optionalDescription> is the `optionalDescription` sanitized into CamelCase.
+    """
+    repo = common.Repo(app_path)
+
+    out_path = out_root_path
+    reuse_id = False
+
+    _id = common.find_highest_id(out_path) if reuse_id else common.get_next_id(out_path)
+    sha1 = repo.get_sha_of_branch('HEAD', short=True)
+    description = 'ortho'
+    out_folder_name = common.SEPARATOR.join((_id, sha1, description))
+
+    out_path = out_root_path / out_folder_name
+    out_path.mkdir()
+
 
 if __name__ == '__main__':
 
