@@ -27,7 +27,7 @@ def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
                            images_path = env['images_path'],
                            live_output=False)
 
-    config_copies = list(env['out_path'].glob('*/config.ini'))
+    config_copies = list(env['out_path'].glob(f'*/{ltp.enriched_config_name}'))
     assert len(config_copies) == 1
     assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
 

@@ -2,7 +2,6 @@
 
 import common
 
-
 import argparse
 import datetime
 import os
@@ -11,6 +10,10 @@ import subprocess
 import time
 import sys
 from pathlib import Path
+
+
+enriched_config_name = 'pipeline.ini' # we copy the user's config to the output folder
+                                      # and enrich it with additional configurations
 
 
 def test_pipeline(app_path: Path,
@@ -110,6 +113,29 @@ def get_lazytp_test_case_name(repo: common.Repo,
     return common.create_test_case_name(_id, sha1, project_name, optional_description)
 
 
+def create_enriched_config(config_path: Path, out_path: Path, images_path: Path):
+    """Copy config to out_path and enrich it by additional configurations.
+
+    If config_path is None, default to the file named 'config.ini' at the local
+    directory.
+    The images are added to the enriched config, as some operating systems
+    limit the command line length.
+
+    Return the path to the enriched config.
+    """
+    default_config_path = Path('.') / 'config.ini'
+    config_path = config_path or default_config_path
+    if not config_path.exists():
+        print(f'Config expected at {config_path.absolute()} but not found.')
+        exit -1
+    path_of_enriched_config = out_path / enriched_config_name
+    shutil.copy(config_path, path_of_enriched_config)
+    with open(path_of_enriched_config, 'a') as f:
+        f.write('\n')
+        f.write(create_input_block_for_config(images_path))
+    return path_of_enriched_config
+
+
 def lazy_test_pipeline(app_path: Path,
                        out_root_path: Path,
                        images_path: Path,
@@ -125,16 +151,7 @@ def lazy_test_pipeline(app_path: Path,
                                                          reuse_id=reuse_id)
     out_path.mkdir()
 
-    # create enriched config
-    if config_path is None:
-        config_path = Path('.') / 'config.ini'
-    if not config_path.exists():
-        raise RuntimeError(f'Config expected at {config_path.absolute()} but not found.')
-    path_of_enriched_config = out_path / 'config.ini'
-    shutil.copy(config_path, path_of_enriched_config)
-    with open(path_of_enriched_config, 'a') as f:
-        f.write('\n')
-        f.write(create_input_block_for_config(images_path))
+    path_of_enriched_config = create_enriched_config(config_path, out_path=out_path, images_path=images_path)
 
     # add patch to output containing changes all the way from last commit on main branch
     patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
