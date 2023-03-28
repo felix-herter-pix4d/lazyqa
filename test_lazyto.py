@@ -74,6 +74,22 @@ def test_create_lazyto_out_folder_name_is_correct_without_optional_description(e
     assert(parsed['description'] == 'ortho')
 
 
+def test_create_lazyto_out_folder_name_is_correct_with_optional_description(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    (env['out_path'] / '001_123456_ortho').touch()
+
+    out_folder_name = lto.create_lazyto_out_folder_name(repo = common.Repo(env['app_path']),
+                                                        out_path = env['out_path'],
+                                                        description ='ortho',
+                                                        optional_description = 'this is optional') # CONTINUE HERE
+
+    parsed = lto.parse_lazyto_out_folder_name(out_folder_name)
+    assert(parsed['id'] == '002')
+    assert(parsed['sha1'] is not None)
+    assert(parsed['description'] == 'ortho')
+    assert(parsed['optional_description'] == 'thisIsOptional')
+
+
 def test_calling_test_ortho_calls_the_expected_command(repo_with_executable):
     app_path = repo_with_executable(executable=echo_call_program)['executable']
     command_line_arguments = r'[section]\nkey=value'

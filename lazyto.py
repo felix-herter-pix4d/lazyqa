@@ -6,7 +6,11 @@ import re
 from pathlib import Path
 
 
-def create_lazyto_out_folder_name(repo: common.Repo, out_path: Path, description: str, reuse_id: bool = False):
+def create_lazyto_out_folder_name(repo: common.Repo,
+                                  out_path: Path,
+                                  description: str,
+                                  optional_description: str = None,
+                                  reuse_id: bool = False):
     """Generate a name for the output of test_pipeline comprising id, sha1, and description.
 
     Per default, the id is more than the largest id used in out_path.
@@ -17,7 +21,10 @@ def create_lazyto_out_folder_name(repo: common.Repo, out_path: Path, description
     """
     _id = common.find_highest_id(out_path) if reuse_id else common.get_next_id(out_path)
     sha1 = repo.get_sha_of_branch('HEAD', short=True)
-    return common.SEPARATOR.join((_id, sha1, description))
+    components = [_id, sha1, description]
+    if optional_description is not None:
+        components.append(common.camel_case(optional_description))
+    return common.SEPARATOR.join(components)
 
 
 def parse_lazyto_out_folder_name(name: str):
