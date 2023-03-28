@@ -60,6 +60,20 @@ def environment_for_test_ortho(repo_with_executable,
             'out_path': out_path}
 
 
+def test_create_lazyto_out_folder_name_is_correct_without_optional_description(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    (env['out_path'] / '001_123456_ortho').touch()
+
+    out_folder_name = lto.create_lazyto_out_folder_name(repo = common.Repo(env['app_path']),
+                                                        out_path = env['out_path'],
+                                                        description ='ortho')
+
+    parsed = lto.parse_lazyto_out_folder_name(out_folder_name)
+    assert(parsed['id'] == '002')
+    assert(parsed['sha1'] is not None)
+    assert(parsed['description'] == 'ortho')
+
+
 def test_calling_test_ortho_calls_the_expected_command(repo_with_executable):
     app_path = repo_with_executable(executable=echo_call_program)['executable']
     command_line_arguments = r'[section]\nkey=value'

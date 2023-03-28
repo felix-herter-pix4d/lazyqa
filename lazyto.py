@@ -1,7 +1,43 @@
 #!/usr/bin/python3
 
 import common
+
+import re
 from pathlib import Path
+
+
+def create_lazyto_out_folder_name(repo: common.Repo, out_path: Path, description: str, reuse_id: bool = False):
+    """Generate a name for the output of test_pipeline comprising id, sha1, and description.
+
+    Per default, the id is more than the largest id used in out_path.
+    It can be specified to re-use the largest id that is present, for use cases where different
+    runs should be identifiable as belonging to the same batch.
+    ATTENTION: When re-using the last id, make sure that the description is unique. To make this
+    easier, the description is taken, as is, and not converted to camel case in this function.
+    """
+    _id = common.find_highest_id(out_path) if reuse_id else common.get_next_id(out_path)
+    sha1 = repo.get_sha_of_branch('HEAD', short=True)
+    return common.SEPARATOR.join((_id, sha1, description))
+
+
+def parse_lazyto_out_folder_name(name: str):
+    """Extract the individual components from the lazy_test_ortho out folder name.
+
+    >>> p = parse_lazyto_out_folder_name('001_123456_ortho_userDescription')
+
+    >>> p['id']
+    '001'
+    >>> p['sha1']
+    '123456'
+    >>> p['description']
+    'ortho'
+    >>> p['optional_description']
+    'userDescription'
+    """
+    parsed = common.parse_test_case_name(name)
+    parsed['description'] = parsed['dataset_name'] # in context of this module, we call it description
+    del parsed['dataset_name']
+    return parsed
 
 
 def ensure_double_quotes(s: str):
@@ -59,29 +95,16 @@ def lazy_test_ortho(app_path: Path,
     """
     repo = common.Repo(app_path)
 
-    out_path = out_root_path
-    reuse_id = False
-
-    _id = common.find_highest_id(out_path) if reuse_id else common.get_next_id(out_path)
-    sha1 = repo.get_sha_of_branch('HEAD', short=True)
-    description = 'ortho'
-    out_folder_name = common.SEPARATOR.join((_id, sha1, description))
-
-    out_path = out_root_path / out_folder_name
+    out_path = out_root_path / create_lazyto_out_folder_name(repo=repo,
+                                                             out_path=out_root_path,
+                                                             description=description)
     out_path.mkdir()
 
 
 if __name__ == '__main__':
 
-    app_path = '~/Code/pix4d-rag/build-fastmap-Release/bin/test_ortho'
-    command_line_arguments = '[general]\\nroot=/home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique'
-    config_path = '/home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique/inputs.conf'
-    print("about to call test_ortho...")
-    test_ortho(app_path=app_path,
-               config_path=config_path,
-               command_line_arguments=command_line_arguments,
-               live_output=True)
-
+    import doctest
+    doctest.testmod()
 
     #args = ['~/Code/pix4d-rag/build-fastmap-Release/bin/test_ortho -c "[general]\\nroot=/home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique" -f /home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique/inputs.conf']
     #common.execute_command(args, live_output=True)
