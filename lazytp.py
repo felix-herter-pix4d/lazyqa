@@ -170,17 +170,8 @@ def lazy_test_pipeline(app_path: Path,
 
     path_of_enriched_config = create_enriched_config(config_path, out_path=out_path, images_path=images_path)
 
-    # add patch to output containing changes all the way from last commit on main branch
-    patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
-    if patch_not_on_main_branch:
-        with open(out_path / 'changesNotOnMainBranch.patch', 'w') as patch_file:
-            patch_file.write(patch_not_on_main_branch)
-
-    # add patch to output containing the last changes
-    untracked_patch = repo.get_untracked_changes()
-    if untracked_patch:
-        with open(out_path / 'untrackedChanges.patch', 'w') as patch_file:
-            patch_file.write(untracked_patch)
+    common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
+    common.add_patch_dirty_state(repo=repo, out_path=out_path)
 
     output = test_pipeline(app_path = app_path,
                            out_path = out_path,

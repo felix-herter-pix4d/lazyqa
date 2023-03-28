@@ -185,6 +185,22 @@ SEPARATOR = '_'
 ID_LEN = 3 # length of the id component in the test case name, e.g. 005
 
 
+def add_patch_not_on_main_branch(repo: Repo, out_path: Path, patch_name: str = 'notOnMainBranch.patch'):
+    """Add a patch to out_path containing repo's current branch's changes that are not on the main branch."""
+    patch_not_on_main_branch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    if patch_not_on_main_branch:
+        with open(out_path / patch_name, 'w') as patch_file:
+            patch_file.write(patch_not_on_main_branch)
+
+
+def add_patch_dirty_state(repo: Repo, out_path: Path, patch_name: str = 'dirtyState.patch'):
+    """Add a patch to out_path containing the untracked changes of the repo."""
+    untracked_patch = repo.get_untracked_changes()
+    if untracked_patch:
+        with open(out_path / 'untrackedChanges.patch', 'w') as patch_file:
+            patch_file.write(untracked_patch)
+
+
 def test_case_name_regex():
     """Returns a regex matching the individual components of a test caste name.
 
