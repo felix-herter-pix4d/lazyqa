@@ -18,7 +18,7 @@ def test_calling_test_pipeline_calls_the_expected_command(make_environment_for_t
 
 def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
-    get_all_config_copies = lambda : list(env['out_path'].glob('*/config.ini'))
+    get_all_config_copies = lambda : list(env['out_path'].glob(f'*/{ltp.enriched_config_name}'))
     assert len(get_all_config_copies()) == 0
 
     ltp.lazy_test_pipeline(app_path = env['app_path'],

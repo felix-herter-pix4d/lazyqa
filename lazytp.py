@@ -127,7 +127,7 @@ def create_enriched_config(config_path: Path, out_path: Path, images_path: Path)
     config_path = config_path or default_config_path
     if not config_path.exists():
         print(f'Config expected at {config_path.absolute()} but not found.')
-        exit -1
+        sys.exit(-1)
     path_of_enriched_config = out_path / enriched_config_name
     shutil.copy(config_path, path_of_enriched_config)
     with open(path_of_enriched_config, 'a') as f:
