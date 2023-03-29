@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 
-copied_config_name = 'ortho.ini' # we copy the user's config to the output folder
+enriched_config_name = 'ortho.ini' # we copy the user's config to the output folder
 
 
 def create_lazyto_out_folder_name(repo: common.Repo,
@@ -87,36 +87,52 @@ def test_ortho(app_path: Path,
     return common.execute_command(command, live_output=live_output)
 
 
-def create_config_copy(config_path: Path, out_path: Path):
-    """Copy config to out_path.
+def enrich_config(config: str, out_path: Path):
+    """Add/overwrite the output filename in the config."""
+    parser = configparser.ConfigParser()
+    parser.optionxform=str # our keys are case-sensitive, see https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
+    parser.read_string(config)
+
+    # add the new output filename to the config section 'output'
+    ortho_path = out_path / f'{out_path.name}.tif'
+    if 'output' not in parser.sections():
+        parser['output'] = {}
+    parser['output']['filename'] = str(ortho_path)
+
+    # enriched config to string
+    lines = []
+    for section in parser.sections():
+        lines.append(f'[{section}]\n')
+        for k, v in parser[section].items():
+            lines.append(f'{k} = {v}\n')
+        lines.append('\n')
+    if lines:
+        del lines[-1] # remove spurious last newline
+    enriched_config = ''.join(lines)
+
+    return enriched_config
+
+def create_enriched_config(config_path: Path, out_path: Path):
+    """Copy config to out_path, add/overwrite some fields.
 
     If config_path is None, default to the file named 'config.ini' at the local
     directory.
+    Dictates the correct out path and filename of the ortho.
 
-    Return the path to the copied config.
+    Returns the path to the copied config.
     """
+    # ensure that there is an input config
     default_config_path = Path('.') / 'config.ini'
     config_path = config_path or default_config_path
     if not config_path.exists():
         print(f'Config expected at {config_path.absolute()} but not found.')
         sys.exit(-1)
 
-    parser = configparser.ConfigParser()
-    parser.read(config_path)
-
-    copied_config_path = out_path / copied_config_name
-    content = []
-    for section in parser.sections():
-        content.append(f'[{section}]\n')
-        for k, v in parser[section].items():
-            content.append(f'{k} = {v}\n')
-        content.append('\n')
-
-    if content:
-        del content[-1] # remove spurious last newline
-
-    with open(copied_config_path, 'w') as f:
-        f.write(''.join(content))
+    # copy & enrich config
+    copied_config_path = out_path / enriched_config_name
+    common.write_file(content = enrich_config(config = common.content_of(config_path),
+                                              out_path = out_path),
+                      file_path = copied_config_path)
 
     return copied_config_path
 
@@ -160,7 +176,7 @@ def lazy_test_ortho(app_path: Path,
                                                              optional_description=optional_description)
     out_path.mkdir()
 
-    copied_config_path = create_config_copy(config_path = config_path, out_path = out_path)
+    copied_config_path = create_enriched_config(config_path = config_path, out_path = out_path)
 
     output = test_ortho(app_path = app_path, config_path = copied_config_path)
 

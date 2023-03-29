@@ -3,6 +3,7 @@ import common
 from test_helpers import *
 
 from pathlib import Path
+import configparser
 import re
 import tempfile
 
@@ -134,9 +135,21 @@ def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
                         out_root_path=env['out_path'],
                         config_path=env['config_path'])
 
-    config_copies = list(env['out_path'].glob(f'*/{lto.copied_config_name}'))
+    config_copies = list(env['out_path'].glob(f'*/{lto.enriched_config_name}'))
     assert len(config_copies) == 1
     assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
+
+
+def test_enriched_config_has_correct_outpath():
+    config = '[section]\nkey = value\n'
+    out_path = Path('/path/to/output/001_123456_ortho_myExperiment/')
+
+    enriched = lto.enrich_config(config=config, out_path=out_path)
+
+    parser = configparser.ConfigParser()
+    parser.read_string(enriched)
+
+    assert(parser['output']['filename'] == str(out_path / f'{out_path.name}.tif'))
 
 
 def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
