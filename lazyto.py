@@ -16,7 +16,7 @@ def create_lazyto_out_folder_name(repo: common.Repo,
                                   description: str,
                                   optional_description: str = None,
                                   reuse_id: bool = False):
-    """Generate a name for the output of test_pipeline comprising id, sha1, and description.
+    """Generate a name for the output of test_ortho comprising id, sha1, and description.
 
     Per default, the id is more than the largest id used in out_path.
     It can be specified to re-use the largest id that is present, for use cases where different
@@ -124,13 +124,14 @@ def lazy_test_ortho(app_path: Path,
                   be the name of the project
     <optionalDescription> is the `optionalDescription` sanitized into CamelCase.
 
-    app_path:      Path to the test_ortho executable. It is assumed that it lives
-                   somewhere in the fastmap repo.
-    out_root_path: Path to a folder. The output folder will be created as a
-                   subfolder of this.
-    config_path:   Path to the config file. Default to './config.ini'
-    description:   Identifier string that will part of the output folder name.
-                   Could be the dataset/project name.
+    app_path:             Path to the test_ortho executable. It is assumed that it lives
+                          somewhere in the fastmap repo.
+    out_root_path:        Path to a folder. The output folder will be created as a
+                          subfolder of this.
+    config_path:          Path to the config file. Default to './config.ini'
+    description:          Identifier string that will part of the output folder name.
+                          Could be the dataset/project name.
+    optional_description: Additional string to be added to the output folder name.
     """
     repo = common.Repo(app_path)
 

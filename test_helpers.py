@@ -93,8 +93,9 @@ def out_dir_with_qa_test_cases(tmp_path):
 
 def insert_dummy_config(path: Path):
     config_path = path / 'config.ini'
+    content = '[section1]\nkey1=value1\nkey2=value2\n\n[section2]\nkey3=value3'
     with open(config_path, 'w') as f:
-        f.write("I'm a dummy config file.")
+        f.write(content)
     return config_path
 
 
