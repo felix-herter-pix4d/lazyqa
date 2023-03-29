@@ -1,15 +1,14 @@
+import common
+
 from pathlib import Path
+import configparser
 import os
 import pytest
 import subprocess
 
 
-def content_of(file: Path) -> str:
-    """Return the content of the file."""
-    result = None
-    with open(file) as f:
-        result = f.read().strip()
-    return result
+content_of = common.content_of
+write_file = common.write_file
 
 
 def subprocess_output(command: list[str]):
@@ -130,3 +129,20 @@ def make_environment_for_test_pipeline(repo_with_executable,
     return environment_for_test_pipeline
 
 
+def config_subset(config_1: str, config_2: str):
+    """Check if the config config_1 is a subset of config_2.
+
+    Sometimes we cannot check for equality due to whitespace differences in the
+    string representation or because one configuration is a subset of the other.
+    """
+    parser_1 = configparser.ConfigParser(); parser_1.read_string(config_1)
+    parser_2 = configparser.ConfigParser(); parser_2.read_string(config_2)
+    sections_1 = set(parser_1.sections())
+    sections_2 = set(parser_2.sections())
+
+    if not sections_1.issubset(sections_2):
+        return False
+    for section in sections_1:
+        if not parser_1[section].items() <= parser_2[section].items():
+            return False
+    return True

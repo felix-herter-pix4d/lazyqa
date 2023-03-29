@@ -146,20 +146,21 @@ def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environ
                                          out_root_path=env['out_path'],
                                          config_path=env['config_path'])
     parsed = parse_lazy_test_ortho_call(command_called)
-    assert(content_of(parsed['config']) == content_of(env['config_path']))
+    assert(config_subset(content_of(env['config_path']), content_of(parsed['config'])))
 
 
 def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ortho):
     env = environment_for_test_ortho
     specified_config = env['config_path'].parent / 'another_config.ini'
-    specified_config.touch()
+    write_file('[a_different_section]\nnew_key=ney_val\n', specified_config)
 
     command_called = lto.lazy_test_ortho(app_path=env['app_path'],
                                          out_root_path=env['out_path'],
                                          config_path=specified_config)
 
     parsed = parse_lazy_test_ortho_call(command_called)
-    assert(content_of(parsed['config']) == content_of(specified_config))
+
+    assert(config_subset(content_of(specified_config), content_of(parsed['config'])))
 
 
 if __name__ == "__main__":

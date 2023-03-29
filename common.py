@@ -15,6 +15,20 @@ def camel_case(s: str):
     return components[0] + "".join(c.title() for c in components[1:])
 
 
+def content_of(file: Path) -> str:
+    """Return the content of the file."""
+    result = None
+    with open(file) as f:
+        result = f.read().strip()
+    return result
+
+
+def write_file(content:str, file_path: Path):
+    """Write the string to a (newly created) file at path."""
+    with open(file_path, 'w') as f:
+        f.write(content)
+
+
 def execute_command(command: list[str], # command to be executed
                     out_file: Path = None, # where to store the stdout (and also stderr)
                     live_output: bool = False # print command's stdout
