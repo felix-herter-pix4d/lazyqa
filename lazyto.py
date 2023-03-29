@@ -3,6 +3,7 @@
 import common
 
 import argparse
+import configparser
 import re
 import shutil
 import sys
@@ -100,8 +101,23 @@ def create_config_copy(config_path: Path, out_path: Path):
         print(f'Config expected at {config_path.absolute()} but not found.')
         sys.exit(-1)
 
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+
     copied_config_path = out_path / copied_config_name
-    shutil.copy(config_path, copied_config_path)
+    content = []
+    for section in parser.sections():
+        content.append(f'[{section}]\n')
+        for k, v in parser[section].items():
+            content.append(f'{k} = {v}\n')
+        content.append('\n')
+
+    if content:
+        del content[-1] # remove spurious last newline
+
+    with open(copied_config_path, 'w') as f:
+        f.write(''.join(content))
+
     return copied_config_path
 
 
