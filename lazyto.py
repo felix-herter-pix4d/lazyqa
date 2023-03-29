@@ -2,6 +2,7 @@
 
 import common
 
+import argparse
 import re
 import shutil
 import sys
@@ -98,6 +99,7 @@ def create_config_copy(config_path: Path, out_path: Path):
     if not config_path.exists():
         print(f'Config expected at {config_path.absolute()} but not found.')
         sys.exit(-1)
+
     copied_config_path = out_path / copied_config_name
     shutil.copy(config_path, copied_config_path)
     return copied_config_path
@@ -106,7 +108,8 @@ def create_config_copy(config_path: Path, out_path: Path):
 def lazy_test_ortho(app_path: Path,
                     out_root_path: Path,
                     config_path: Path = None,
-                    description: str = 'ortho'):
+                    description: str = 'ortho',
+                    optional_description: str = None):
     """Create a folder for the output of test_ortho.
 
     The output folder will be a subfolder of `out_root_path` and will be named
@@ -137,7 +140,8 @@ def lazy_test_ortho(app_path: Path,
 
     out_path = out_root_path / create_lazyto_out_folder_name(repo=repo,
                                                              out_path=out_root_path,
-                                                             description=description)
+                                                             description=description,
+                                                             optional_description=optional_description)
     out_path.mkdir()
 
     copied_config_path = create_config_copy(config_path = config_path, out_path = out_path)
@@ -151,9 +155,50 @@ def lazy_test_ortho(app_path: Path,
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description =
+           """
+           lazy_to, test_ortho for lazy people.
 
-    import doctest
-    doctest.testmod()
+           This script calls test_ortho, checks for a stale binary, writes
+           the results to an automatically generated output folder that tracks
+           version information.
+           """,
+        formatter_class=argparse.RawTextHelpFormatter)
 
-    #args = ['~/Code/pix4d-rag/build-fastmap-Release/bin/test_ortho -c "[general]\\nroot=/home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique" -f /home/fherter/Tickets/cv11_stripe_artifacts_GPU_fast/Data/museumOblique/inputs.conf']
-    #common.execute_command(args, live_output=True)
+    parser.add_argument(
+        '-x', '--test-ortho',
+        help='Path to test_ortho executable. Assumed to be somewhere inside the rag repo.'
+    )
+
+    parser.add_argument(
+        '-o', '--out-path',
+        help='Path to where the output should be stored. The script will add a new sub-directory.'
+    )
+
+    parser.add_argument(
+        '-p', '--project-name',
+        default = 'ortho',
+        help="Name to identify the project, to 'ortho'."
+    )
+
+    parser.add_argument(
+        '-d', '--description',
+        help='Optional description. It will be appended to the output folder name.'
+    )
+
+    parser.add_argument('--no-confirmation', action='store_true')
+
+    args = vars(parser.parse_args())
+
+    common.check_mandatory_arguments(mandatory_args=['test_ortho', 'out_path'], argument_parser=parser)
+
+    common.check_executable(Path(args['test_ortho']), prompt_user_confirmation=not args['no_confirmation'])
+
+    common.check_mandatory_arguments(mandatory_args=['test_ortho', 'out_path'],
+                                     argument_parser=parser)
+
+    lazy_test_ortho(app_path = Path(args['test_ortho']),
+                    out_root_path = Path(args['out_path']),
+                    description = args['project_name'],
+                    optional_description=args['description'])
