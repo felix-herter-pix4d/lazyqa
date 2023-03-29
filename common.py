@@ -1,6 +1,10 @@
-import logging
+import argparse
+import datetime
+import os
 import re
+import sys
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -61,6 +65,63 @@ def is_part_of_git_repo(path: Path):
         return True
     except subprocess.CalledProcessError:
         return False
+
+
+class colors:
+    red = '\033[91m'
+    orange = '\033[93m'
+    normal = '\033[0m'
+
+
+def check_mandatory_arguments(mandatory_args: list[str], argument_parser: argparse.ArgumentParser):
+    """Check if mandatory arguments are present, abort if not."""
+    args = vars(argument_parser.parse_args())
+    missing_arg_names = [name for name in mandatory_args if args[name] is None]
+    argument_name_to_flag = lambda name : '--' + name.replace('_', '-')
+    if missing_arg_names:
+        argument_parser.print_help()
+        print(f'{colors.red}\nMissing required arguments:{colors.normal} ',
+               [argument_name_to_flag(name) for name in missing_arg_names])
+        sys.exit(-1)
+
+
+def check_executable(app_path: str, prompt_user_confirmation:bool = True):
+    # wrong path to binary?
+    if not app_path.exists():
+        print(f'{colors.red}',
+              f'binary {app_path} not found',
+              f'{colors.normal}')
+        exit(-1)
+
+    # binary actually a directory?
+    if app_path.is_dir():
+        print(f'{colors.red}',
+              f'binary {app_path} is actually a directory',
+              f'{colors.normal}')
+        exit(-1)
+
+    # binary not executable?
+    if not os.access(app_path, os.X_OK):
+        print(f'{colors.red}',
+              f'binary {app_path} is not executable',
+              f'{colors.normal}')
+        exit(-1)
+
+    # binary not part of git repo?
+    if not is_part_of_git_repo(app_path):
+        print(f'{colors.red}',
+              f'binary {app_path} must be inside the repo',
+              f'{colors.normal}')
+        exit(-1)
+
+    # stale binary?
+    if prompt_user_confirmation:
+        seconds_since_last_modification =  int(time.time() - os.path.getmtime(app_path))
+        if seconds_since_last_modification > 60:
+            print(f'{colors.orange}age:',
+                  f'{datetime.timedelta(seconds=seconds_since_last_modification)}',
+                  f'{colors.normal}')
+            input('(press any key to continue)')
 
 
 #---------------------------------------------------------------------------Repo
