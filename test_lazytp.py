@@ -32,22 +32,6 @@ def test_lazy_test_pipeline_copies_config(make_environment_for_test_pipeline):
     assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
 
 
-def test_lazy_test_pipeline_reads_local_config(make_environment_for_test_pipeline):
-    env = make_environment_for_test_pipeline(executable=echo_call_program)
-    os.chdir(env['config_path'].parent)
-
-    # when no config path is specified...
-    what_was_called = ltp.lazy_test_pipeline(app_path = env['app_path'],
-                                             out_root_path = env['out_path'],
-                                             images_path = env['images_path'],
-                                             live_output=False)
-
-    # ...the local config (at env['config_path']) is used
-    get_config_argument = lambda call : re.match(r'.*-f (\S*).*', call).group(1) # capture argument after '-f' flag
-    config_used_path = get_config_argument(what_was_called)
-    assert content_of(env['config_path']) in content_of(config_used_path) # not equal, copy is enriched
-
-
 def test_lazy_test_pipeline_creates_correct_output_folder_when_no_description_is_given(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
 

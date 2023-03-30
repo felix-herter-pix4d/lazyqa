@@ -68,15 +68,11 @@ def get_lazytp_test_case_name(repo: common.Repo,
 def create_enriched_config(config_path: Path, out_path: Path, images_path: Path):
     """Copy config to out_path and enrich it by additional configurations.
 
-    If config_path is None, default to the file named 'config.ini' at the local
-    directory.
     The images are added to the enriched config, as some operating systems
     limit the command line length.
 
     Return the path to the enriched config.
     """
-    default_config_path = Path('.') / 'config.ini'
-    config_path = config_path or default_config_path
     if not config_path.exists():
         print(f'Config expected at {config_path.absolute()} but not found.')
         sys.exit(-1)
@@ -91,8 +87,8 @@ def create_enriched_config(config_path: Path, out_path: Path, images_path: Path)
 def lazy_test_pipeline(app_path: Path,
                        out_root_path: Path,
                        images_path: Path,
+                       config_path: Path,
                        optional_description: str = None,
-                       config_path: Path = None,
                        reuse_id = False, # re-use last id to indicate that qa test case belongs to same batch
                        live_output = True):
     """Create a folder for the output and write the test_pipeline results to it.
@@ -163,6 +159,12 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-c', '--config',
+        default = './config.ini',
+        help='Path to the config.ini. Default is ./config.ini. Will be copied and expanded (see output folder).'
+    )
+
+    parser.add_argument(
         '-d', '--description',
         help='Optional description. It will be appended to the output folder name.'
     )
@@ -179,4 +181,5 @@ if __name__ == '__main__':
     lazy_test_pipeline(app_path = Path(args['test_pipeline']),
                        out_root_path = Path(args['out_path']),
                        images_path = Path(args['images_path']),
+                       config_path = Path(args['config']),
                        optional_description=args['description'])

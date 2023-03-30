@@ -124,6 +124,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        '-c', '--config',
+        default = './config.ini',
+        help='Path to the config.ini. Default is ./config.ini. Will be copied and expanded (see output folders).'
+    )
+
+    parser.add_argument(
         '-d', '--description',
         help='Optional description. It will be appended to the output folder names.'
     )
@@ -141,7 +147,7 @@ if __name__ == "__main__":
     gen = batch_ltp(gather_batchltp_arguments(qa_projects_root_path=Path(args.projects_path),
                                              app_path=Path(args.test_pipeline),
                                              out_root_path=Path(args.out_path),
-                                             config_path=Path('./config.ini'),
+                                             config_path=Path(args.config),
                                              optional_description=args.description))
     # trigger all computations
     for _ in gen:

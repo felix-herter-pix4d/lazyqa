@@ -121,14 +121,10 @@ def create_enriched_config(config_path: Path, out_path: Path):
 
     Returns the path to the copied config.
     """
-    # ensure that there is an input config
-    default_config_path = Path('.') / 'config.ini'
-    config_path = config_path or default_config_path
     if not config_path.exists():
         print(f'Config expected at {config_path.absolute()} but not found.')
         sys.exit(-1)
 
-    # copy & enrich config
     copied_config_path = out_path / enriched_config_name
     common.write_file(content = enrich_config(config = common.content_of(config_path),
                                               out_path = out_path),
@@ -139,7 +135,7 @@ def create_enriched_config(config_path: Path, out_path: Path):
 
 def lazy_test_ortho(app_path: Path,
                     out_root_path: Path,
-                    config_path: Path = None,
+                    config_path: Path,
                     description: str = 'ortho',
                     optional_description: str = None):
     """Create a folder for the output of test_ortho.
@@ -163,7 +159,7 @@ def lazy_test_ortho(app_path: Path,
                           somewhere in the fastmap repo.
     out_root_path:        Path to a folder. The output folder will be created as a
                           subfolder of this.
-    config_path:          Path to the config file. Default to './config.ini'
+    config_path:          Path to the config file.
     description:          Identifier string that will part of the output folder name.
                           Could be the dataset/project name.
     optional_description: Additional string to be added to the output folder name.
@@ -209,6 +205,12 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-c', '--config',
+        default = './config.ini',
+        help='Path to the config.ini. Default is ./config.ini. Will be copied and expanded (see output folder).'
+    )
+
+    parser.add_argument(
         '-p', '--project-name',
         default = 'ortho',
         help="Name to identify the project, to 'ortho'."
@@ -232,5 +234,6 @@ if __name__ == '__main__':
 
     lazy_test_ortho(app_path = Path(args['test_ortho']),
                     out_root_path = Path(args['out_path']),
+                    config_path = Path(args['config']),
                     description = args['project_name'],
                     optional_description=args['description'])
