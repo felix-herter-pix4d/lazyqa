@@ -29,11 +29,24 @@ def write_file(content:str, file_path: Path):
         f.write(content)
 
 
+def sanitize_command(command: list[str]):
+    """Sanitize all components of the command.
+
+    E.g. ['ls', '~'] -> ['ls', '/home/<username>/']
+    where <username> is the actual username.
+    """
+    sanitize = lambda x : os.path.expanduser(x) if issubclass(type(x), Path) else x
+    if issubclass(type(command), list):
+        return [sanitize(component) for component in command]
+    else: # no list, hopefully string or Path
+        return sanitize(command)
+
+
 def execute_command(command: list[str], # command to be executed
                     out_file: Path = None, # where to store the stdout (and also stderr)
                     live_output: bool = False # print command's stdout
                     ):
-    process = subprocess.Popen(command,
+    process = subprocess.Popen(sanitize_command(command),
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
                                encoding='utf-8',
@@ -57,7 +70,7 @@ def execute_command(command: list[str], # command to be executed
 
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
-    result = subprocess.run(command, capture_output=True)
+    result = subprocess.run(sanitize_command(command), capture_output=True)
     result.check_returncode()
     return result.stdout.decode('utf-8').strip()
 

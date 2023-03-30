@@ -178,10 +178,10 @@ def lazy_test_ortho(app_path: Path,
 
     copied_config_path = create_enriched_config(config_path = config_path, out_path = out_path)
 
-    output = test_ortho(app_path = app_path, config_path = copied_config_path)
-
     common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
     common.add_patch_dirty_state(repo=repo, out_path=out_path)
+
+    output = test_ortho(app_path = app_path, config_path = copied_config_path)
 
     return output # for testing purposes
 
