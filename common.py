@@ -112,15 +112,25 @@ def check_mandatory_arguments(mandatory_args: list[str], argument_parser: argpar
         sys.exit(-1)
 
 
-def check_executable(app_path: str, prompt_user_confirmation:bool = True):
-    # wrong path to binary?
+def check_executable(app_path: str, recompile: bool = True, prompt_user_confirmation: bool = True):
+    """Do some checks for the executable `app_path`.
+
+    Re-compile to make sure that we are working with an up-to-date version.
+    If the executable is old -> prompt for user confirmation to still use it.
+
+    app_path:                 Path to the executable.
+    recompile:                If false, skip the re-compilation and use the binary, as is.
+    prompt_user_confirmation: If false, do not ask the user to confirm when attempting to use
+                              stale executables.
+    """
+    # path points to nowhere?
     if not app_path.exists():
         print(f'{colors.red}',
               f'binary {app_path} not found',
               f'{colors.normal}')
         exit(-1)
 
-    # binary actually a directory?
+    # binary accidentally a directory?
     if app_path.is_dir():
         print(f'{colors.red}',
               f'binary {app_path} is actually a directory',
@@ -140,6 +150,11 @@ def check_executable(app_path: str, prompt_user_confirmation:bool = True):
               f'binary {app_path} must be inside the repo',
               f'{colors.normal}')
         exit(-1)
+
+    # recompile test_ortho
+    if recompile:
+        print(f're-compiling {app_path.name}...')
+        execute_command(f'cmake --build {app_path.parent.parent} -t test_ortho', live_output = True)
 
     # stale binary?
     if prompt_user_confirmation:

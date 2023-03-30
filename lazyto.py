@@ -251,9 +251,6 @@ if __name__ == '__main__':
 
     common.check_executable(Path(args['test_ortho']), prompt_user_confirmation=not args['no_confirmation'])
 
-    common.check_mandatory_arguments(mandatory_args=['test_ortho', 'out_path'],
-                                     argument_parser=parser)
-
     lazy_test_ortho(app_path = Path(args['test_ortho']),
                     out_root_path = Path(args['out_path']),
                     config_path = Path(args['config']),
