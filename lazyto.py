@@ -85,6 +85,16 @@ def test_ortho(app_path: Path,
     return common.execute_command(command, live_output=live_output)
 
 
+def add_to_config(parser: configparser.ConfigParser, section: str, key: str, value: str):
+    """Add key/value pair to the given section of the config parser.
+
+    If the section does not exists, create it.
+    """
+    if section not in parser.sections():
+        parser[section] = {}
+    parser[section][key] = value
+
+
 def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     """Add/overwrite the output filename in the config."""
     parser = configparser.ConfigParser()
@@ -93,15 +103,11 @@ def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
 
     # add the new output filename to the config section 'output'
     ortho_path = out_path / f'{out_path.name}.tif'
-    if 'output' not in parser.sections():
-        parser['output'] = {}
-    parser['output']['filename'] = str(ortho_path)
+    add_to_config(parser, section='output', key='filename', value=str(ortho_path))
 
     # add debug output path
     if debug_output_path is not None:
-        if 'color_balance' not in parser.sections():
-            parser['color_balance'] = {}
-        parser['color_balance']['debug_tiles_path'] = str(debug_output_path)
+        add_to_config(parser, section='color_balance', key='debug_tiles_path', value=str(debug_output_path))
 
     # enriched config to string
     lines = []
@@ -115,6 +121,7 @@ def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     enriched_config = ''.join(lines)
 
     return enriched_config
+
 
 def create_enriched_config(config_path: Path, out_path: Path, debug_output_path: Path):
     """Copy config to out_path, add/overwrite some fields.
