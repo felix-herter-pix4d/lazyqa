@@ -4,8 +4,6 @@ import common
 
 import argparse
 import configparser
-import re
-import shutil
 import sys
 from pathlib import Path
 
