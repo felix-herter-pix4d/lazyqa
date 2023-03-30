@@ -126,6 +126,20 @@ def test_lazy_test_ortho_creates_correct_output_folder(environment_for_test_orth
     assert(len(post_matches) == 1)
 
 
+def test_lazy_test_ortho_creates_correct_debug_folder(environment_for_test_ortho):
+    env = environment_for_test_ortho
+    pre_matches = list(env['out_path'].glob('001_*_ortho/debug'))
+
+    lto.lazy_test_ortho(app_path = env['app_path'],
+                        out_root_path = env['out_path'],
+                        config_path=env['config_path'],
+                        generate_debug_output=True)
+
+    post_matches = list(env['out_path'].glob('001_*_ortho/debug'))
+    assert(len(pre_matches) == 0)
+    assert(len(post_matches) == 1)
+
+
 def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
     env = environment_for_test_ortho
     get_all_config_copies = lambda : list(env['out_path'].glob('*/{lto.copied_config_name}'))

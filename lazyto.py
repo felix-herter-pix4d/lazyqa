@@ -85,7 +85,7 @@ def test_ortho(app_path: Path,
     return common.execute_command(command, live_output=live_output)
 
 
-def enrich_config(config: str, out_path: Path):
+def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     """Add/overwrite the output filename in the config."""
     parser = configparser.ConfigParser()
     parser.optionxform=str # our keys are case-sensitive, see https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
@@ -96,6 +96,12 @@ def enrich_config(config: str, out_path: Path):
     if 'output' not in parser.sections():
         parser['output'] = {}
     parser['output']['filename'] = str(ortho_path)
+
+    # add debug output path
+    if debug_output_path is not None:
+        if 'color_balance' not in parser.sections():
+            parser['color_balance'] = {}
+        parser['color_balance']['debug_tiles_path'] = str(debug_output_path)
 
     # enriched config to string
     lines = []
@@ -110,7 +116,7 @@ def enrich_config(config: str, out_path: Path):
 
     return enriched_config
 
-def create_enriched_config(config_path: Path, out_path: Path):
+def create_enriched_config(config_path: Path, out_path: Path, debug_output_path: Path):
     """Copy config to out_path, add/overwrite some fields.
 
     If config_path is None, default to the file named 'config.ini' at the local
@@ -125,7 +131,8 @@ def create_enriched_config(config_path: Path, out_path: Path):
 
     copied_config_path = out_path / enriched_config_name
     common.write_file(content = enrich_config(config = common.content_of(config_path),
-                                              out_path = out_path),
+                                              out_path = out_path,
+                                              debug_output_path = debug_output_path),
                       file_path = copied_config_path)
 
     return copied_config_path
@@ -135,7 +142,8 @@ def lazy_test_ortho(app_path: Path,
                     out_root_path: Path,
                     config_path: Path,
                     description: str = 'ortho',
-                    optional_description: str = None):
+                    optional_description: str = None,
+                    generate_debug_output: bool = False):
     """Create a folder for the output of test_ortho.
 
     The output folder will be a subfolder of `out_root_path` and will be named
@@ -170,7 +178,14 @@ def lazy_test_ortho(app_path: Path,
                                                              optional_description=optional_description)
     out_path.mkdir()
 
-    copied_config_path = create_enriched_config(config_path = config_path, out_path = out_path)
+    debug_output_path = None
+    if generate_debug_output:
+        debug_output_path = out_path / 'debug'
+        debug_output_path.mkdir()
+
+    copied_config_path = create_enriched_config(config_path = config_path,
+                                                out_path = out_path,
+                                                debug_output_path = debug_output_path)
 
     common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
     common.add_patch_dirty_state(repo=repo, out_path=out_path)
@@ -219,6 +234,8 @@ if __name__ == '__main__':
         help='Optional description. It will be appended to the output folder name.'
     )
 
+    parser.add_argument('--debug', action='store_true')
+
     parser.add_argument('--no-confirmation', action='store_true')
 
     args = vars(parser.parse_args())
@@ -234,4 +251,5 @@ if __name__ == '__main__':
                     out_root_path = Path(args['out_path']),
                     config_path = Path(args['config']),
                     description = args['project_name'],
-                    optional_description=args['description'])
+                    optional_description = args['description'],
+                    generate_debug_output = args['debug'])
