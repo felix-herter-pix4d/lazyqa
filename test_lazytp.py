@@ -84,3 +84,8 @@ def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(make_environment_f
 def test_stitched_result_name_contains_id_and_description():
     result_name = ltp.derive_stitched_result_name('015_1234567890_snowyHillside_increasedStepSizeTo42')
     assert result_name == '015_snowyHillside_increasedStepSizeTo42_stitched.tiff'
+
+
+def test_stitched_result_name_handles_missing_optional_descripiton():
+    result_name = ltp.derive_stitched_result_name('015_1234567890_snowyHillside_')
+    assert result_name == '015_snowyHillside_stitched.tiff'

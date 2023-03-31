@@ -33,11 +33,10 @@ def create_input_block_for_config(images_path: Path = None):
 def derive_stitched_result_name(test_case_name: str):
     """Derived name has the form '<id>_<optionalDescription>_stitched.tiff'.'"""
     parsed = common.parse_test_case_name(test_case_name)
-    components = [parsed['id'], parsed['dataset_name']]
-    if parsed['optional_description'] is not None:
-        components += [parsed['optional_description']]
-    components += ['stitched.tiff']
-    return '_'.join(components)
+    return '_'.join(c for c in (parsed['id'],
+                                parsed['dataset_name'],
+                                parsed['optional_description'],
+                                'stitched.tiff') if c)
 
 
 def rename_stitched_tiff(out_subfolder_path: str):
