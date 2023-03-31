@@ -123,23 +123,25 @@ def assert_that_command_creates_folder(command, parent: Path, folder_pattern: st
 
 def test_lazy_test_ortho_creates_correct_output_folder(environment_for_test_ortho):
     env = environment_for_test_ortho
-    command =  lambda: lto.lazy_test_ortho(app_path=env['app_path'],
-                                           out_root_path=env['out_path'],
-                                           config_path=env['config_path'])
+    command = lambda: lto.lazy_test_ortho(app_path = env['app_path'],
+                                          out_root_path = env['out_path'],
+                                          config_path = env['config_path'],
+                                          live_output = False)
     assert_that_command_creates_folder(command,
-                                       parent=env['out_path'],
-                                       folder_pattern='001_*_ortho')
+                                       parent = env['out_path'],
+                                       folder_pattern = '001_*_ortho')
 
 
 def test_lazy_test_ortho_creates_correct_debug_folder(environment_for_test_ortho):
     env = environment_for_test_ortho
-    command =  lambda: lto.lazy_test_ortho(app_path = env['app_path'],
-                                           out_root_path = env['out_path'],
-                                           config_path=env['config_path'],
-                                           generate_debug_output=True)
+    command = lambda: lto.lazy_test_ortho(app_path = env['app_path'],
+                                          out_root_path = env['out_path'],
+                                          config_path = env['config_path'],
+                                          generate_debug_output = True,
+                                          live_output = False)
     assert_that_command_creates_folder(command,
-                                       parent=env['out_path'],
-                                       folder_pattern='001_*_ortho/debug')
+                                       parent = env['out_path'],
+                                       folder_pattern = '001_*_ortho/debug')
 
 
 def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
@@ -147,9 +149,10 @@ def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
     get_all_config_copies = lambda : list(env['out_path'].glob('*/{lto.copied_config_name}'))
     assert len(get_all_config_copies()) == 0
 
-    lto.lazy_test_ortho(app_path=env['app_path'],
-                        out_root_path=env['out_path'],
-                        config_path=env['config_path'])
+    lto.lazy_test_ortho(app_path = env['app_path'],
+                        out_root_path = env['out_path'],
+                        config_path = env['config_path'],
+                        live_output = False)
 
     config_copies = list(env['out_path'].glob(f'*/{lto.enriched_config_name}'))
     assert len(config_copies) == 1
@@ -171,9 +174,10 @@ def test_enriched_config_has_correct_outpath():
 def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
     env = environment_for_test_ortho
 
-    command_called = lto.lazy_test_ortho(app_path=env['app_path'],
-                                         out_root_path=env['out_path'],
-                                         config_path=env['config_path'])
+    command_called = lto.lazy_test_ortho(app_path = env['app_path'],
+                                         out_root_path = env['out_path'],
+                                         config_path = env['config_path'],
+                                         live_output = False)
     parsed = parse_lazy_test_ortho_call(command_called)
     assert(config_subset(content_of(env['config_path']), content_of(parsed['config'])))
 
@@ -183,9 +187,10 @@ def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ort
     specified_config = env['config_path'].parent / 'another_config.ini'
     write_file('[a_different_section]\nnew_key=ney_val\n', specified_config)
 
-    command_called = lto.lazy_test_ortho(app_path=env['app_path'],
-                                         out_root_path=env['out_path'],
-                                         config_path=specified_config)
+    command_called = lto.lazy_test_ortho(app_path = env['app_path'],
+                                         out_root_path = env['out_path'],
+                                         config_path = specified_config,
+                                         live_output = False)
 
     parsed = parse_lazy_test_ortho_call(command_called)
 

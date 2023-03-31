@@ -100,18 +100,6 @@ class colors:
     normal = '\033[0m'
 
 
-def check_mandatory_arguments(mandatory_args: list[str], argument_parser: argparse.ArgumentParser):
-    """Check if mandatory arguments are present, abort if not."""
-    args = vars(argument_parser.parse_args())
-    missing_arg_names = [name for name in mandatory_args if args[name] is None]
-    argument_name_to_flag = lambda name : '--' + name.replace('_', '-')
-    if missing_arg_names:
-        argument_parser.print_help()
-        print(f'{colors.red}\nMissing required arguments:{colors.normal} ',
-               [argument_name_to_flag(name) for name in missing_arg_names])
-        sys.exit(-1)
-
-
 def check_executable(app_path: str, recompile: bool = True, prompt_user_confirmation: bool = True):
     """Do some checks for the executable `app_path`.
 
@@ -206,7 +194,7 @@ class Repo():
                 return f'{guess}'
             except subprocess.CalledProcessError:
                 pass
-        raise RuntimeError(f"Could not guess main branch in repo '{repo}'")
+        raise RuntimeError(f"Could not guess main branch in repo '{self.repo}'")
 
     def get_patch(self, _from: str, to: str='HEAD'):
         return self._git(f'format-patch {_from}..{to} --stdout')

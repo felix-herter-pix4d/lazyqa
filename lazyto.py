@@ -150,16 +150,15 @@ def lazy_test_ortho(app_path: Path,
                     config_path: Path,
                     description: str = 'ortho',
                     optional_description: str = None,
-                    generate_debug_output: bool = False):
+                    generate_debug_output: bool = False,
+                    live_output: bool = True):
     """Create a folder for the output of test_ortho.
 
     The output folder will be a subfolder of `out_root_path` and will be named
     following the pattern,
-
         <id>_<sha1>_<description>_<optionalDescription>
     e.g.
         003_1234567890_ortho_increasedStepSizeTo42
-
     <id> is an index that is per default one larger then the largest <id> used
          in `out_root_path`.
     <sha1> is a short sha1 of the `test_ortho` repo at the time `test_ortho`
@@ -168,14 +167,16 @@ def lazy_test_ortho(app_path: Path,
                   be the name of the project
     <optionalDescription> is the `optionalDescription` sanitized into CamelCase.
 
-    app_path:             Path to the test_ortho executable. It is assumed that it lives
-                          somewhere in the fastmap repo.
-    out_root_path:        Path to a folder. The output folder will be created as a
-                          subfolder of this.
-    config_path:          Path to the config file.
-    description:          Identifier string that will part of the output folder name.
-                          Could be the dataset/project name.
-    optional_description: Additional string to be added to the output folder name.
+    app_path:              Path to the test_ortho executable. It is assumed that it lives
+                           somewhere in the fastmap repo.
+    out_root_path:         Path to a folder. The output folder will be created as a
+                           subfolder of this.
+    config_path:           Path to the config file.
+    description:           Identifier string that will part of the output folder name.
+                           Could be the dataset/project name.
+    optional_description:  Additional string to be added to the output folder name.
+    generate_debug_output: If true, create debug subfolder and trigger generation of debug tiles.
+    live_output:           If true, prints the output of the test_ortho execution.
     """
     repo = common.Repo(app_path)
 
@@ -197,7 +198,7 @@ def lazy_test_ortho(app_path: Path,
     common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
     common.add_patch_dirty_state(repo=repo, out_path=out_path)
 
-    output = test_ortho(app_path = app_path, config_path = copied_config_path)
+    output = test_ortho(app_path = app_path, config_path = copied_config_path, live_output = live_output)
 
     return output # for testing purposes
 
@@ -216,11 +217,13 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '-x', '--test-ortho',
+        required=True,
         help='Path to test_ortho executable. Assumed to be somewhere inside the rag repo.'
     )
 
     parser.add_argument(
         '-o', '--out-path',
+        default = '.',
         help='Path to where the output should be stored. The script will add a new sub-directory.'
     )
 
@@ -246,8 +249,6 @@ if __name__ == '__main__':
     parser.add_argument('--no-confirmation', action='store_true')
 
     args = vars(parser.parse_args())
-
-    common.check_mandatory_arguments(mandatory_args=['test_ortho', 'out_path'], argument_parser=parser)
 
     common.check_executable(Path(args['test_ortho']), prompt_user_confirmation=not args['no_confirmation'])
 

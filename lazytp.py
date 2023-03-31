@@ -89,8 +89,8 @@ def lazy_test_pipeline(app_path: Path,
                        images_path: Path,
                        config_path: Path,
                        optional_description: str = None,
-                       reuse_id = False, # re-use last id to indicate that qa test case belongs to same batch
-                       live_output = True):
+                       reuse_id: bool = False, # re-use last id to indicate that qa test case belongs to same batch
+                       live_output: bool = True):
     """Create a folder for the output and write the test_pipeline results to it.
 
     The output folder will be a subfolder of `out_root_path` and will be named
@@ -145,17 +145,19 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '-x', '--test-pipeline',
-        help='Path to test_pipeline executable. Assumed to be somewhere inside the rag repo.'
-    )
-
-    parser.add_argument(
-        '-o', '--out-path',
-        help='Path to where the output should be stored. The script will add a new sub-directory.'
+        required = True,
+        help ='Path to test_pipeline executable. Assumed to be somewhere inside the rag repo.'
     )
 
     parser.add_argument(
         '-i', '--images-path',
-        help='Path to the \'images\' directory. The parent folder name will be used to name the output sub-directory.'
+        required = True,
+        help = 'Path to the \'images\' directory. The parent folder name will be used to name the output sub-directory.'
+    )
+
+    parser.add_argument(
+        '-o', '--out-path',
+        help = 'Path to where the output should be stored. The script will add a new sub-directory.'
     )
 
     parser.add_argument(
@@ -172,9 +174,6 @@ if __name__ == '__main__':
     parser.add_argument('--no-confirmation', action='store_true')
 
     args = vars(parser.parse_args())
-
-    common.check_mandatory_arguments(mandatory_args=['test_pipeline', 'out_path', 'images_path'],
-                                     argument_parser=parser)
 
     common.check_executable(Path(args['test_pipeline']), prompt_user_confirmation=not args['no_confirmation'])
 
