@@ -159,16 +159,20 @@ def test_lazy_test_ortho_copies_config(environment_for_test_ortho):
     assert content_of(env['config_path']) in content_of(config_copies[0]) # not equal, copy is enriched
 
 
-def test_enriched_config_has_correct_outpath():
-    config = '[section]\nkey = value\n'
+def test_enriched_config_has_correct_out_path():
     out_path = Path('/path/to/output/001_123456_ortho_myExperiment/')
 
-    enriched = lto.enrich_config(config=config, out_path=out_path)
+    enriched = lto.enrich_config(config='', out_path=out_path)
 
-    parser = configparser.ConfigParser()
-    parser.read_string(enriched)
+    assert(common.parse_config( enriched )['output']['filename'] == str(out_path / f'{out_path.name}.tif'))
 
-    assert(parser['output']['filename'] == str(out_path / f'{out_path.name}.tif'))
+
+def test_enriched_config_has_correct_debug_path():
+    debug_out_path = Path('/path/to/debug')
+
+    enriched = lto.enrich_config(config = '', out_path = Path(), debug_output_path = debug_out_path)
+
+    assert(common.parse_config( enriched )['color_balance']['debug_tiles_path'] == str(debug_out_path))
 
 
 def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
@@ -193,7 +197,6 @@ def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ort
                                          live_output = False)
 
     parsed = parse_lazy_test_ortho_call(command_called)
-
     assert(config_subset(content_of(specified_config), content_of(parsed['config'])))
 
 

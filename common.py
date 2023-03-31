@@ -1,4 +1,5 @@
 import argparse
+import configparser
 import datetime
 import os
 import re
@@ -13,6 +14,14 @@ def camel_case(s: str):
     """Turn s into camel case, removing any of the symbols in '_ .-'"""
     components = re.split("_| |\.|-", s)
     return components[0] + "".join(c.title() for c in components[1:])
+
+
+def parse_config(config:str):
+    """Return a ConfigParser that parsed the config; the parser is case-sensitive wrt the keys."""
+    parser = configparser.ConfigParser()
+    parser.optionxform = str # our keys are case-sensitive, see https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
+    parser.read_string(config)
+    return parser
 
 
 def content_of(file: Path) -> str:

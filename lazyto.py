@@ -97,9 +97,7 @@ def add_to_config(parser: configparser.ConfigParser, section: str, key: str, val
 
 def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     """Add/overwrite the output filename in the config."""
-    parser = configparser.ConfigParser()
-    parser.optionxform=str # our keys are case-sensitive, see https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
-    parser.read_string(config)
+    parser = common.parse_config(config)
 
     # add the new output filename to the config section 'output'
     ortho_path = out_path / f'{out_path.name}.tif'
