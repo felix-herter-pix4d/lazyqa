@@ -175,6 +175,16 @@ def test_enriched_config_has_correct_debug_path():
     assert(common.parse_config( enriched )['color_balance']['debug_tiles_path'] == str(debug_out_path))
 
 
+def test_enriched_config_has_correct_options_for_input_from_test_pipeline():
+    test_pipeline_project_path = Path('/path/to/Output/001_123456_snowyMountain_myExperiment/')
+
+    enriched = lto.enrich_config(config = '', out_path = Path(), test_pipeline_project_path = test_pipeline_project_path)
+
+    parsed = common.parse_config( enriched )
+    assert(parsed['images']['opfProject'] == str(test_pipeline_project_path / 'opf' / 'project.json'))
+    assert(parsed['dsm']['input_file'] == str(test_pipeline_project_path / 'dsm.tiff'))
+
+
 def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
     env = environment_for_test_ortho
 

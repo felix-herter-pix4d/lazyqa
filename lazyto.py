@@ -95,8 +95,26 @@ def add_to_config(parser: configparser.ConfigParser, section: str, key: str, val
     parser[section][key] = value
 
 
-def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
-    """Add/overwrite the output filename in the config."""
+def enrich_config(config: str,
+                  out_path: Path,
+                  debug_output_path: Path = None,
+                  test_pipeline_project_path: Path = None):
+    """Add/alter fields in the config.
+
+    Change the config to make sure that the result ortho is at the right
+    location. Additionally enable running from test_pipeline results or writing
+    of debug information.
+
+    config:            Original config string.
+    out_path:          This path will be set at the output folder for the
+                       resulting ortho.
+    debug_output_path: If not None, this path will be used as destination for
+                       the debug tiles.
+    test_pipeline_project_path: It not None, this path is assumed to point to
+                                an output folder of lazy_test_pipeline. The
+                                config will be altered to read the dsm and
+                                project opf description from this folder.
+    """
     parser = common.parse_config(config)
 
     # add the new output filename to the config section 'output'
@@ -106,6 +124,11 @@ def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     # add debug output path
     if debug_output_path is not None:
         add_to_config(parser, section='color_balance', key='debug_tiles_path', value=str(debug_output_path))
+
+    # add information to run from lazy_test_pipeline output
+    if test_pipeline_project_path is not None:
+        add_to_config(parser, section='images', key='opfProject', value=str(test_pipeline_project_path / 'opf' / 'project.json'))
+        add_to_config(parser, section='dsm', key='input_file', value=str(test_pipeline_project_path / 'dsm.tiff'))
 
     # enriched config to string
     lines = []
@@ -121,7 +144,10 @@ def enrich_config(config: str, out_path: Path, debug_output_path: Path = None):
     return enriched_config
 
 
-def create_enriched_config(config_path: Path, out_path: Path, debug_output_path: Path):
+def create_enriched_config(config_path: Path,
+                           out_path: Path,
+                           debug_output_path: Path,
+                           test_pipeline_project_path: Path):
     """Copy config to out_path, add/overwrite some fields.
 
     If config_path is None, default to the file named 'config.ini' at the local
@@ -136,8 +162,9 @@ def create_enriched_config(config_path: Path, out_path: Path, debug_output_path:
 
     copied_config_path = out_path / enriched_config_name
     common.write_file(content = enrich_config(config = common.content_of(config_path),
-                                              out_path = out_path,
-                                              debug_output_path = debug_output_path),
+                                              out_path=out_path,
+                                              debug_output_path=debug_output_path,
+                                              test_pipeline_project_path=test_pipeline_project_path),
                       file_path = copied_config_path)
 
     return copied_config_path
@@ -149,6 +176,7 @@ def lazy_test_ortho(app_path: Path,
                     description: str = 'ortho',
                     optional_description: str = None,
                     generate_debug_output: bool = False,
+                    test_pipeline_project_path: Path = None,
                     live_output: bool = True):
     """Create a folder for the output of test_ortho.
 
@@ -173,7 +201,10 @@ def lazy_test_ortho(app_path: Path,
     description:           Identifier string that will part of the output folder name.
                            Could be the dataset/project name.
     optional_description:  Additional string to be added to the output folder name.
-    generate_debug_output: If true, create debug subfolder and trigger generation of debug tiles.
+    generate_debug_output: If true, create debug subfolder and trigger
+                           generation of debug tiles.
+    test_pipeline_project_path: Path to output folder of lazy_test_pipeline. If specified,
+                                 use that output as input for test_ortho.
     live_output:           If true, prints the output of the test_ortho execution.
     """
     repo = common.Repo(app_path)
@@ -191,7 +222,8 @@ def lazy_test_ortho(app_path: Path,
 
     copied_config_path = create_enriched_config(config_path = config_path,
                                                 out_path = out_path,
-                                                debug_output_path = debug_output_path)
+                                                debug_output_path = debug_output_path,
+                                                test_pipeline_project_path = test_pipeline_project_path)
 
     common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
     common.add_patch_dirty_state(repo=repo, out_path=out_path)
@@ -242,9 +274,21 @@ if __name__ == '__main__':
         help='Optional description. It will be appended to the output folder name.'
     )
 
-    parser.add_argument('--debug', action='store_true')
+    parser.add_argument(
+        '-t', '--test-pipeline-output',
+        help='Optional, path to output folder of lazy_test_pipeline to process using that opf.'
+    )
 
-    parser.add_argument('--no-confirmation', action='store_true')
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help="Optional, generate debug tiles in subfolder 'debug'.")
+
+    parser.add_argument(
+        '--no-confirmation',
+        action='store_true',
+        help='Optional, suppress any user prompts. Handy when called in non-interactive script.'
+        )
 
     args = vars(parser.parse_args())
 
@@ -255,4 +299,6 @@ if __name__ == '__main__':
                     config_path = Path(args['config']),
                     description = args['project_name'],
                     optional_description = args['description'],
-                    generate_debug_output = args['debug'])
+                    generate_debug_output = args['debug'],
+                    test_pipeline_project_path = Path(args['test_pipeline_output']),
+                    )
