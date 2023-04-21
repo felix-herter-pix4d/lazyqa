@@ -109,7 +109,7 @@ class colors:
     normal = '\033[0m'
 
 
-def check_executable(app_path: str, recompile: bool = True, prompt_user_confirmation: bool = True):
+def check_executable(app_path: Path, recompile: bool = True, prompt_user_confirmation: bool = True):
     """Do some checks for the executable `app_path`.
 
     Re-compile to make sure that we are working with an up-to-date version.
@@ -151,7 +151,7 @@ def check_executable(app_path: str, recompile: bool = True, prompt_user_confirma
     # recompile test_ortho
     if recompile:
         print(f're-compiling {app_path.name}...')
-        execute_command(f'cmake --build {app_path.parent.parent} -t test_ortho', live_output = True)
+        execute_command(f'cmake --build {app_path.parent.parent} -t {app_path.name}', live_output = True)
 
     # stale binary?
     if prompt_user_confirmation:
