@@ -55,6 +55,7 @@ def execute_command(command: list[str], # command to be executed
                     out_file: Path = None, # where to store the stdout (and also stderr)
                     live_output: bool = False # print command's stdout
                     ):
+    """Execute a command, print stdout to screen, to a file, or to both."""
     process = subprocess.Popen(sanitize_command(command),
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
