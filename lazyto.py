@@ -60,13 +60,15 @@ def ensure_double_quotes(s: str):
 
 
 def test_ortho(app_path: Path,
+               out_path: Path,
                config_path: Path,
                command_line_arguments: str = None,
                command_line_arguments_2: str = None,
                live_output=True):
     """Execute test_ortho in a subprocess.
 
-    app_path:                  Path path to the test_ortho executable.
+    app_path:                  Path to the test_ortho executable.
+    out_path:                  Path to where the results should be stored.
     config_path:               Path to the config.ini
     command_line_arguments:    String containing command line arguments passed before the config.
     command_line_arguments_ 2: String containing command line arguments passed after the config.
@@ -82,7 +84,7 @@ def test_ortho(app_path: Path,
     command += ' -f ' + str(config_path)
     command = append_command_line_argument(command, command_line_arguments_2)
 
-    return common.execute_command(command, live_output=live_output)
+    return common.execute_command(command, out_file=out_path/"log.txt", live_output=live_output)
 
 
 def add_to_config(parser: configparser.ConfigParser, section: str, key: str, value: str):
@@ -178,7 +180,7 @@ def lazy_test_ortho(app_path: Path,
                     generate_debug_output: bool = False,
                     test_pipeline_project_path: Path = None,
                     live_output: bool = True):
-    """Create a folder for the output of test_ortho.
+    """Run test_ortho and put results in a new folder.
 
     The output folder will be a subfolder of `out_root_path` and will be named
     following the pattern,
@@ -228,7 +230,10 @@ def lazy_test_ortho(app_path: Path,
     common.add_patch_not_on_main_branch(repo=repo, out_path=out_path)
     common.add_patch_dirty_state(repo=repo, out_path=out_path)
 
-    output = test_ortho(app_path = app_path, config_path = copied_config_path, live_output = live_output)
+    output = test_ortho(app_path = app_path,
+                        out_path=out_path,
+                        config_path = copied_config_path,
+                        live_output = live_output)
 
     return output # for testing purposes
 

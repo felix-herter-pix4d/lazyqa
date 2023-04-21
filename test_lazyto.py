@@ -94,14 +94,21 @@ def test_create_lazyto_out_folder_name_is_correct_with_optional_description(envi
     assert(parsed['optional_description'] == 'thisIsOptional')
 
 
-def test_calling_test_ortho_calls_the_expected_command(repo_with_executable):
+@pytest.mark.skip(reason = "to be implemented")
+def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(make_environment_for_test_pipeline):
+    pass # TODO: implement
+
+
+def test_calling_test_ortho_calls_the_expected_command(tmp_path, repo_with_executable):
     app_path = repo_with_executable(executable=echo_call_program)['executable']
     command_line_arguments = r'[section]\nkey=value'
     command_line_arguments_2 = r'[section2]\nkey2=value2'
+    out_path = tmp_path
     config_path = '/path/to/config.ini'
 
     command = lto.test_ortho(
                app_path = app_path,
+               out_path = out_path,
                config_path = config_path,
                command_line_arguments = command_line_arguments,
                command_line_arguments_2 = command_line_arguments_2,
