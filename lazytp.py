@@ -156,6 +156,7 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '-o', '--out-path',
+        default = '.',
         help = 'Path to where the output should be stored. The script will add a new sub-directory.'
     )
 
