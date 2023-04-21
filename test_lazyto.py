@@ -211,9 +211,6 @@ def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ort
 
 
 if __name__ == "__main__":
-    parse_lazy_test_ortho_call(r'/path/test_ortho -c "[section]\nkey=value\n" -f ./config.ini -c "[section2]\nkey=value"')
-    parse_lazy_test_ortho_call(r'/path/test_ortho -c "[section]\nkey=value\n" -f ./config.ini')
-    parse_lazy_test_ortho_call(r'/path/test_ortho -f ./config.ini')
 
     import doctest
     doctest.testmod()
