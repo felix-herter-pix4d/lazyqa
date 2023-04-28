@@ -55,12 +55,13 @@ def test_repo_class_cannot_be_constructed_from_non_repo_path(tmp_path):
 def test_repo_class_retrieves_patch(repo_with_dev_branch):
     repo = common.Repo(repo_with_dev_branch)
     patch = repo.get_patch(_from=repo.get_merge_base('HEAD', repo.guess_main_branch()))
+    file_mode = '100644' if os.name == 'nt' else '100755' # file modes differ on differen OS
     expected_content = ('---\n'
                         ' app | 1 +\n'
                         ' 1 file changed, 1 insertion(+)\n'
-                        ' create mode 100755 app\n\n'
+                        f' create mode {file_mode} app\n\n'
                         'diff --git a/app b/app\n'
-                        'new file mode 100755\n'
+                        f'new file mode {file_mode}\n'
                         'index 0000000..827a748\n'
                         '--- /dev/null\n'
                         '+++ b/app\n'
