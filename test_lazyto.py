@@ -99,6 +99,7 @@ def test_lazy_test_pipeline_writes_log_to_qa_test_case_folder(make_environment_f
     pass # TODO: implement
 
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_calling_test_ortho_calls_the_expected_command(tmp_path, repo_with_executable):
     app_path = repo_with_executable(executable=echo_call_program)['executable']
     command_line_arguments = r'[section]\nkey=value'
@@ -192,6 +193,7 @@ def test_enriched_config_has_correct_options_for_input_from_test_pipeline():
     assert(parsed['dsm']['input_file'] == str(test_pipeline_project_path / 'dsm.tiff'))
 
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environment_for_test_ortho):
     env = environment_for_test_ortho
 
@@ -203,6 +205,7 @@ def test_lazy_test_ortho_uses_default_config_location_when_not_specified(environ
     assert(config_subset(content_of(env['config_path']), content_of(parsed['config'])))
 
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_lazy_test_ortho_uses_specified_config_location(environment_for_test_ortho):
     env = environment_for_test_ortho
     specified_config = env['config_path'].parent / 'another_config.ini'
