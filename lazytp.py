@@ -3,6 +3,7 @@
 import common
 
 import argparse
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -175,7 +176,9 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
-    common.check_executable(Path(args['test_pipeline']), prompt_user_confirmation=not args['no_confirmation'])
+    common.check_executable(Path(args['test_pipeline']),
+                                 recompile = False if os.name == 'nt' else True, # have to figure out how to build using cmake on Windows
+                                 prompt_user_confirmation = not args['no_confirmation'])
 
     lazy_test_pipeline(app_path = Path(args['test_pipeline']),
                        out_root_path = Path(args['out_path']),
