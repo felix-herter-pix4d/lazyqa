@@ -106,6 +106,7 @@ def make_lazytp_args(env: dict,
             "optional_description": optional_description or "some description",
             "config_path": config_path or env["config_path"]}
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_config(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
     images_path = Path("path/to/images")
@@ -116,6 +117,7 @@ def test_calling_batchltp_with_one_project_inserts_correct_images_path_into_conf
     path_to_used_config = parse_lazytp_call(command_triggered)['config']
     assert f'path = {images_path}' in content_of(path_to_used_config)
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_configs(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
     images_paths = (Path("project1/images"),
@@ -130,6 +132,7 @@ def test_calling_batchltp_with_two_projects_inserts_correct_images_path_into_con
     assert f'path = {images_paths[0]}' in content_of(paths_to_used_configs[0])
     assert f'path = {images_paths[1]}' in content_of(paths_to_used_configs[1])
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_calling_batchltp_with_one_project_creates_correct_output_folder(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline()
     projects = [make_lazytp_args(env)]
@@ -140,6 +143,7 @@ def test_calling_batchltp_with_one_project_creates_correct_output_folder(make_en
     assert path_to_output.exists()
     assert common.is_test_case_name(path_to_output.name)
 
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_batchltp_output_folders_have_the_same_id(two_qa_projects_with_images,
                                                   make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline(executable = echo_call_program)
