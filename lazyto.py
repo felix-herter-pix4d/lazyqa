@@ -297,7 +297,9 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
-    common.check_executable(Path(args['test_ortho']), prompt_user_confirmation=not args['no_confirmation'])
+    common.check_executable(Path(args['test_ortho']),
+                            recompile = False if os.name == 'nt' else True, # have to figure out how to build using cmake on Windows
+                            prompt_user_confirmation = not args['no_confirmation'])
 
     lazy_test_ortho(app_path = Path(args['test_ortho']),
                     out_root_path = Path(args['out_path']),
