@@ -11,6 +11,15 @@ content_of = common.content_of
 write_file = common.write_file
 
 
+def skip_on_windows(f):
+    """Decorator that can be used to skip tests that don't run under windows."""
+    import os
+    if os.name == 'nt':
+        return pytest.mark.skip(f)
+    return f
+
+
+
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)

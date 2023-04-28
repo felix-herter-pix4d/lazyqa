@@ -4,6 +4,8 @@ from test_helpers import *
 
 import re
 
+
+@skip_on_windows # requires implementing the echo_call_programm mechanic on windows
 def test_calling_test_pipeline_calls_the_expected_command(make_environment_for_test_pipeline):
     env = make_environment_for_test_pipeline(executable = echo_call_program)
     command_triggered = ltp.test_pipeline(app_path = env['app_path'],
