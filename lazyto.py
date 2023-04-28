@@ -4,6 +4,7 @@ import common
 
 import argparse
 import configparser
+import os
 import sys
 from pathlib import Path
 
@@ -247,6 +248,11 @@ if __name__ == '__main__':
            This script calls test_ortho, checks for a stale binary, writes
            the results to an automatically generated output folder that tracks
            version information.
+
+           It requires the path of the test_ortho binary passed via the -x flag.
+
+           To start from a previous output of lazy_tp, pass the output folder of
+           the lazy_tp run via the -t flag.
            """,
         formatter_class=argparse.RawTextHelpFormatter)
 
