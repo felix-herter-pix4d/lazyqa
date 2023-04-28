@@ -56,6 +56,9 @@ def execute_command(command: list[str], # command to be executed
                     live_output: bool = False # print command's stdout
                     ):
     """Execute a command, print stdout to screen, to a file, or to both."""
+    if os.name == 'nt': # on windows, use 'powershell' instead of the default 'cmd'
+        os.environ['COMSPEC'] = 'powershell'
+
     process = subprocess.Popen(sanitize_command(command),
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,

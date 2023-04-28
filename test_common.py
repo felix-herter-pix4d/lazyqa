@@ -31,10 +31,9 @@ def test_camel_case_removes_all_forbidden_symbols():
 def test_that_path_into_git_repo_is_correctly_detected(repo_with_executable):
     assert common.is_part_of_git_repo(repo_with_executable()['executable'])
 
-
 def test_execute_command_copies_stdout_to_out_path(tmpdir):
     content = 'hello world!'
-    command = [f'echo {content}']
+    command = [f'echo "{content}"']
     out_file = tmpdir / "output.txt"
 
     common.execute_command(command, out_file=out_file)
