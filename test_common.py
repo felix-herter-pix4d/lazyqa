@@ -6,7 +6,6 @@ import pytest
 import subprocess
 from pathlib import Path
 
-# TODO: test this
 def subprocess_output(command: list[str]):
     """Return stdout of the command."""
     result = subprocess.run(command, capture_output=True)
@@ -21,7 +20,7 @@ def repo_with_dev_branch(repo_dir, repo_with_executable):
     return repo_dir
 
 
-#--------------------------------------------------------------test misc common
+#--------------------------------------------------------------test misc helpers
 def test_camel_case_removes_all_forbidden_symbols():
     non_camel_case_string = "one_two.three_four five six-seven.height-nine"
     camel_case_string = "oneTwoThreeFourFiveSixSevenHeightNine"
@@ -94,28 +93,13 @@ def test_repo_class_untracked_changes_returns_empty_patch_when_there_are_no_chan
     patch = repo.get_untracked_changes()
     assert patch == ''
 
-#-----------------------------------------------------------------test_QAProject
-def test_qa_project_class_can_be_created_when_layout_assumptions_are_met(make_environment_for_test_pipeline):
-    common.QAProject(make_environment_for_test_pipeline()['images_path'].parent)
+
+#----------------------------------------------------------test specific helpers
+def test_get_next_id_returns_the_correct_id(out_dir_with_test_case_results):
+    assert common.get_next_id(out_dir_with_test_case_results) == '004' # highest existing id is '003'
 
 
-def test_qa_project_class_cannot_be_created_when_images_directory_is_missing(tmp_path):
-    with pytest.raises(common.QAProject.LayoutError):
-        common.QAProject(tmp_path)
-
-
-def test_qa_project_class_cannot_be_created_when_images_directory_contains_no_images(tmp_path):
-    (tmp_path / 'images').mkdir()
-    with pytest.raises(common.QAProject.LayoutError):
-        common.QAProject(tmp_path)
-
-
-#----------------------------------------------------------test specific common
-def test_get_next_id_returns_the_correct_id(out_dir_with_qa_test_cases):
-    assert common.get_next_id(out_dir_with_qa_test_cases) == '004' # highest existing id is '003'
-
-
-def test_qa_test_case_names_are_correct_when_no_description_given():
+def test_that_test_case_names_are_correct_when_no_description_given():
     sha1 = '1234567890'
     _id = '001'
     project_name = 'snowy_Hillside'
@@ -123,7 +107,7 @@ def test_qa_test_case_names_are_correct_when_no_description_given():
     assert test_case_name == '001_1234567890_snowyHillside'
 
 
-def test_qa_test_case_names_are_correct_when_description_given():
+def test_that_test_case_names_are_correct_when_description_given():
     sha1 = '1234567890'
     _id = '001'
     project_name = 'snowy_Hillside'

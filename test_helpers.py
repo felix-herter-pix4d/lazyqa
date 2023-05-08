@@ -85,7 +85,7 @@ def qa_project_with_images(tmp_path):
 
 
 @pytest.fixture
-def out_dir_with_qa_test_cases(tmp_path):
+def out_dir_with_test_case_results(tmp_path):
     """Fixture that yields a directory with some folders inside.
 
     Specifically there are folders
@@ -110,7 +110,7 @@ def insert_dummy_config(path: Path):
 @pytest.fixture
 def make_environment_for_test_pipeline(repo_with_executable,
                                        qa_project_with_images,
-                                       out_dir_with_qa_test_cases):
+                                       out_dir_with_test_case_results):
     """Fixture that yields a complete environment for test_pipeline.
 
     This comprises
@@ -129,7 +129,7 @@ def make_environment_for_test_pipeline(repo_with_executable,
         app_path = repo_with_call_inspection_executable['executable']
         images_path = qa_project_with_images['images_path']
         config_path = insert_dummy_config(repo_path.parent)
-        out_path = out_dir_with_qa_test_cases
+        out_path = out_dir_with_test_case_results
         return {'repo_path': repo_path,
                 'app_path': app_path,
                 'images_path': images_path,
